@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/atoms/button";
 import { getErrorMessage } from "@/helpers/api/getErrorMessage";
 import type { FollowState } from "@/modules/social/models";
+import { PreacherNotificationToggle } from "@/modules/social/components/PreacherNotificationToggle";
 import { useGetFollowStateQuery, useSetFollowingMutation } from "@/modules/social/store/endpoints";
 
 export interface FollowButtonProps {
@@ -54,6 +55,7 @@ export function FollowButton({ slug, preacherName, initialState, isSignedIn }: F
 
   return (
     <div className="flex flex-col items-center gap-2">
+      <div className="flex items-center gap-2">
       <Button
         size="lg"
         variant={state.isFollowing ? "outline" : "default"}
@@ -65,6 +67,10 @@ export function FollowButton({ slug, preacherName, initialState, isSignedIn }: F
         {state.isFollowing ? <CheckIcon data-icon="inline-start" aria-hidden /> : <PlusIcon data-icon="inline-start" aria-hidden />}
         {state.isFollowing ? "Following" : "Follow"}
       </Button>
+      {state.isFollowing ? (
+        <PreacherNotificationToggle slug={slug} preacherName={preacherName} isEnabled={state.notificationsEnabled} />
+      ) : null}
+      </div>
       {followers}
     </div>
   );

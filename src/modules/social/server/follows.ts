@@ -77,3 +77,14 @@ export async function listFollowing(db: D1Database, viewer: Viewer): Promise<Fol
     isLive: Boolean(row.is_live),
   }));
 }
+
+/** Turn go-live notifications for one followed preacher on or off (requirement 18). */
+export async function setNotifications(db: D1Database, viewer: Viewer, slug: string, isEnabled: boolean): Promise<FollowState> {
+  const preacherId = await preacherIdForSlug(db, slug);
+  const result = await db
+    .prepare("UPDATE follows SET notifications_enabled = ? WHERE listener_id = ? AND preacher_id = ?")
+    .bind(isEnabled ? 1 : 0, viewer.id, preacherId)
+    .run();
+  if (!result.meta.changes) throw conflict("Follow this preacher first.");
+  return getFollowState(db, viewer, slug);
+}

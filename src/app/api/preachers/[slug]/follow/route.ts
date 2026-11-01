@@ -1,7 +1,8 @@
-import { ok, route } from "@/lib/api";
+import { ok, parseJson, route } from "@/lib/api";
 import { getDb } from "@/lib/cloudflare";
 import { getViewer, requireSession } from "@/modules/accounts";
-import { follow, getFollowState, unfollow } from "@/modules/social/server/follows";
+import { followNotificationsSchema } from "@/modules/social/schemas/push";
+import { follow, getFollowState, setNotifications, unfollow } from "@/modules/social/server/follows";
 
 export const dynamic = "force-dynamic";
 
@@ -21,4 +22,11 @@ export const PUT = route(async (_request: Request, { params }: Context) => {
 export const DELETE = route(async (_request: Request, { params }: Context) => {
   const viewer = await requireSession();
   return ok(await unfollow(getDb(), viewer, (await params).slug));
+});
+
+/** Notifications on or off for this one preacher. */
+export const PATCH = route(async (request: Request, { params }: Context) => {
+  const viewer = await requireSession();
+  const { notificationsEnabled } = await parseJson(request, followNotificationsSchema);
+  return ok(await setNotifications(getDb(), viewer, (await params).slug, notificationsEnabled));
 });
