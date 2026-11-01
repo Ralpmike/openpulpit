@@ -72,6 +72,7 @@ One family, Geist, self-hosted through `next/font` with the Latin subset only. H
 | Going live, ending, deleting, blocking, admin actions | shadcn `AlertDialog` |
 | Statuses | `Badge` variants: `live`, `good`, `warning`, `destructive`, `secondary` |
 | Persistent player | `PlayerBar` (OP-22) |
+| App icon | Placeholder "OP" mark on primary (`public/icons/`). To decide: a real logo |
 
 ## Do and don't
 

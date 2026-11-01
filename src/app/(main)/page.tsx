@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Button } from "@/components/ui/atoms/button";
+import { InstallPrompt } from "@/components/layout/InstallPrompt";
 import { PreacherCard } from "@/components/ui/molecules/PreacherCard";
 import { getDb } from "@/lib/cloudflare";
 import { getViewer, listSuggestedPreachers } from "@/modules/accounts";
@@ -23,6 +24,7 @@ export default async function HomePage() {
   return (
     <div className="flex flex-col gap-8" data-testid="home-page">
       <h1 className="sr-only">OpenPulpit</h1>
+      <InstallPrompt />
       <LiveNowSection initialBroadcasts={liveNow} />
 
       <section aria-labelledby="recent-heading" className="flex flex-col gap-2">
