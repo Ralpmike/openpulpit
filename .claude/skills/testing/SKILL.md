@@ -12,7 +12,7 @@ description: How to test OpenPulpit — what must be tested, which tool to use (
 | Module rules (`server/policy.ts`), helpers, schemas | Vitest in Node. Pure functions, no mocks needed |
 | Module services and route handlers | Vitest with a fake D1 (better-sqlite3 running the real `migrations/`, or Miniflare's D1) and stubbed LiveKit, R2 and push clients from `test/stubs/`. Call the exported `GET`/`POST` with a `Request` |
 | LiveKit webhooks | Vitest with signed sample payloads (valid, tampered, missing signature, repeated delivery) |
-| Client components, hooks, store endpoints | Vitest + React Testing Library + jsdom |
+| Client components, hooks, store endpoints | Vitest + React Testing Library + jsdom. The default environment is Node; component and hook tests start with `// @vitest-environment jsdom` |
 | Main user journeys | Playwright on a 360×740 phone viewport against `npm run preview`, with LiveKit pointed at a local `livekit-server --dev` |
 | Real conditions | A real Android phone on mobile data before each beta release (see `weekly-ship`) |
 
@@ -59,4 +59,4 @@ Paths are under `src/` except `e2e/`. Never create a `__tests__/` folder deeper 
 
 ## Before saying done
 
-Run `npm run check && npm run lint && npm test`, and `npm run build` if config, routes or dependencies changed. If a migration changed, apply it to a fresh local database and run the seed. Run the Playwright journey for the area you touched when it exists. Then run the `convention-check` skill.
+Run `npm run check && npm run lint && npm test` (the same as CI, `.github/workflows/ci.yml`), and `npm run build` if config, routes or dependencies changed. If a migration changed, apply it to a fresh local database and run the seed. Run the Playwright journey for the area you touched when it exists. Then run the `convention-check` skill.

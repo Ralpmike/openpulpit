@@ -37,7 +37,7 @@ migrations/                 # NNNN_name.sql (see d1-schema)
 | Entry | Rule |
 | --- | --- |
 | `src/app/api/**/route.ts` | Every handler calls `requireSession()` / `requireRole('preacher' \| 'admin')` from `@/modules/accounts` first, unless it's on the public list below. Role and ownership are checked in the handler or service, never only in middleware or the UI (PRD NFR "Security") |
-| `src/middleware.ts` | Redirects only (signed-out user to `/login`). It is not a security boundary: route handlers check again |
+| Signed-in layouts (`(preacher)/layout.tsx`, `admin/layout.tsx`) | Redirect signed-out users to `/login?next=…` with `requireSession()` on the server. Next 16 renamed `middleware` to `proxy` (Node runtime only); we don't use one, so there is no extra hop on every request. Neither is a security boundary: route handlers check again |
 | `/api/auth/[...all]` | Better Auth's handler. Public by design |
 | `POST /api/webhooks/livekit` | Public. LiveKit signature verified before anything else; handlers idempotent (see `broadcasting-rules`) |
 | `POST /api/broadcasts/:id/listen-token`, `GET /api/recordings/:id/audio` | Public (listening needs no account). Rate-limited, and visibility checked first |
@@ -47,7 +47,8 @@ Add a new public route only with a strong reason and its own check (signature, r
 
 ## Bindings and config
 
-- Get bindings per request with `getCloudflareContext()` (from `@opennextjs/cloudflare`) inside `lib/cloudflare.ts`: `env.DB` (D1), `env.RECORDINGS` (R2). Never cache `env` or a D1 handle in module scope across requests.
+- Get bindings per request through `@/lib/cloudflare` (`getEnv()`, `getDb()`, `getRecordingsBucket()`, `waitUntil()`, `getLimits()`), which wraps `getCloudflareContext()`. Never cache `env` or a D1 handle in module scope across requests.
+- Next 16 here runs **without** Cache Components (`cacheComponents` is off in `next.config.ts`), so route segment config such as `export const dynamic = 'force-dynamic'` applies.
 - Better Auth is built per request in `lib/auth.ts` from the D1 binding (`getAuth()`), not as a module-level singleton.
 - Secrets (`BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_SECRET`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` for LiveKit Egress, `VAPID_PRIVATE_KEY`, email provider key) are set with `npx wrangler secret put NAME` and locally in `.dev.vars` (never committed). Add each new name to `.dev.vars.example`, then `npm run cf-typegen` to regenerate `cloudflare-env.d.ts`.
 - Non-secret settings (`LIVEKIT_URL`, `FREE_MONTHLY_BROADCAST_MINUTES`, `FREE_RECORDING_LIMIT`, `RECONNECT_GRACE_SECONDS`, `VAPID_PUBLIC_KEY`) go in `wrangler.jsonc` `vars`. Only values meant for the browser get a `NEXT_PUBLIC_` name.
@@ -85,4 +86,4 @@ Add a new public route only with a strong reason and its own check (signature, r
 
 ## Local runs
 
-`npm run dev` runs `next dev` with bindings from wrangler (local D1 and R2). `npm run preview` builds with OpenNext and runs the real Worker locally: use it before deploying anything that touches bindings, middleware or caching. LiveKit uses a dev project (or `livekit-server --dev` locally); point `LIVEKIT_URL` at it in `.dev.vars`.
+`npm run dev` runs `next dev` with bindings from wrangler (local D1 and R2, through `initOpenNextCloudflareForDev` in `next.config.ts`). `npm run preview` builds with OpenNext and runs the real Worker locally: use it before deploying anything that touches bindings, middleware or caching. LiveKit uses a dev project (or `livekit-server --dev` locally); point `LIVEKIT_URL` at it in `.dev.vars`.
