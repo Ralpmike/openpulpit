@@ -9,6 +9,7 @@ import { FieldSeparator } from "@/components/ui/atoms/field";
 import { authClient, authErrorMessage } from "@/lib/authClient";
 import { GoogleSignInButton } from "@/modules/accounts/components/GoogleSignInButton";
 import { SignUpForm } from "@/modules/accounts/components/SignUpForm";
+import { useChooseToPreachMutation } from "@/modules/accounts/store/endpoints";
 import { useAfterSignIn } from "@/modules/accounts/components/useAfterSignIn";
 import type { SignUpFormValues } from "@/modules/accounts/schemas/auth";
 
@@ -21,12 +22,23 @@ export function SignUpPage({ isGoogleEnabled }: SignUpPageProps) {
   const searchParams = useSearchParams();
   const isGoogleError = searchParams.get("error") === "google";
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [chooseToPreach] = useChooseToPreachMutation();
 
   async function signUp(values: SignUpFormValues) {
     setErrorMessage(null);
-    const { error } = await authClient.signUp.email(values);
+    const { role, ...account } = values;
+    const { error } = await authClient.signUp.email(account);
     if (error) return setErrorMessage(authErrorMessage(error));
-    finishSignIn();
+    if (role === "preacher") {
+      try {
+        await chooseToPreach().unwrap();
+      } catch {
+        // The account exists; they can still pick "I'm a preacher" from their account page.
+        return finishSignIn("/account");
+      }
+    }
+    // New preachers set up their public profile next (requirement 3).
+    finishSignIn(role === "preacher" ? "/profile/edit" : "/");
   }
 
   const loginHref = nextPath === "/" ? "/login" : `/login?next=${encodeURIComponent(nextPath)}`;
