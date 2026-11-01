@@ -1,5 +1,11 @@
 import { api } from "@/store/api";
 import type { MyRecording, PublicRecording, RecordingVisibility } from "@/modules/library/models";
+
+export interface RecordingLimitStatus {
+  limit: number;
+  count: number;
+  nextToGo: { id: string; title: string } | null;
+}
 import type { RecordingDetailsFormValues } from "@/modules/library/schemas/recording";
 
 export const libraryApi = api.injectEndpoints({
@@ -20,6 +26,10 @@ export const libraryApi = api.injectEndpoints({
       query: (id) => ({ url: `/recordings/${id}`, method: "DELETE" }),
       invalidatesTags: ["Recording"],
     }),
+    getRecordingLimit: build.query<RecordingLimitStatus, void>({
+      query: () => "/me/recording-limit",
+      providesTags: [{ type: "Recording", id: "MINE" }],
+    }),
     listRecentRecordings: build.query<PublicRecording[], void>({
       query: () => "/recordings/recent",
       providesTags: ["Recording"],
@@ -32,4 +42,5 @@ export const {
   useUpdateRecordingMutation,
   useSetRecordingHiddenMutation,
   useDeleteRecordingMutation,
+  useGetRecordingLimitQuery,
 } = libraryApi;
