@@ -14,6 +14,31 @@ export type UseReplayAudioReturn = {
 };
 
 const SAVE_EVERY_MS = 15_000;
+const REPLAY_COUNTS_AFTER_SECONDS = 30;
+const DEVICE_KEY = "openpulpit.device";
+
+/** A random id for this device, so a visitor's replay counts once a day (hashed on the server). */
+function deviceId(): string {
+  try {
+    let id = localStorage.getItem(DEVICE_KEY);
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem(DEVICE_KEY, id);
+    }
+    return id;
+  } catch {
+    return crypto.randomUUID();
+  }
+}
+
+function countReplay(id: string) {
+  void fetch(`${API_BASE_URL}/recordings/${id}/replays`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ deviceId: deviceId() }),
+    keepalive: true,
+  }).catch(() => undefined);
+}
 const localKey = (id: string) => `openpulpit.position.${id}`;
 
 function readLocal(id: string): number {
@@ -116,7 +141,20 @@ export function useReplayAudio(
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !replayId) return;
-    const onTime = () => setCurrentTime(audio.currentTime);
+    // Count a replay after 30 s of actual listening (requirement 29), once per load.
+    let listenedSeconds = 0;
+    let lastTime = audio.currentTime;
+    let isCounted = false;
+    const onTime = () => {
+      const delta = audio.currentTime - lastTime;
+      lastTime = audio.currentTime;
+      if (!audio.paused && delta > 0 && delta < 2) listenedSeconds += delta / Math.max(audio.playbackRate, 1);
+      if (!isCounted && listenedSeconds >= REPLAY_COUNTS_AFTER_SECONDS) {
+        isCounted = true;
+        countReplay(replayId);
+      }
+      setCurrentTime(audio.currentTime);
+    };
     const onMeta = () => setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
     const onWaiting = () => setIsBuffering(true);
     const onPlaying = () => setIsBuffering(false);

@@ -1,6 +1,6 @@
 "use client";
 
-import { EyeIcon, EyeOffIcon, MoreVerticalIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import { EyeIcon, EyeOffIcon, HeadphonesIcon, MoreVerticalIcon, PencilIcon, RadioIcon, Trash2Icon } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -88,6 +88,16 @@ export function MyRecordingItem({ recording }: { recording: MyRecording }) {
           <RecordingStatusBadge recording={recording} />
           <span>{formatShortDate(recording.createdAt)}</span>
           {recording.durationSeconds ? <span>{formatDuration(recording.durationSeconds)}</span> : null}
+        </span>
+        <span className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm tabular-nums" data-testid="recording-stats">
+          <span className="flex items-center gap-1">
+            <RadioIcon aria-hidden className="size-4 text-muted-foreground" />
+            {recording.peakListeners} <span className="text-muted-foreground">peak live</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <HeadphonesIcon aria-hidden className="size-4 text-muted-foreground" />
+            {recording.replayCount} <span className="text-muted-foreground">{recording.replayCount === 1 ? "replay" : "replays"}</span>
+          </span>
         </span>
       </div>
       <DropdownMenu>

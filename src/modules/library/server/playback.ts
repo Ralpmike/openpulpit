@@ -101,3 +101,23 @@ export async function getPosition(db: D1Database, viewer: Viewer, recordingId: s
     .first<{ position_seconds: number }>();
   return row?.position_seconds ?? 0;
 }
+
+/** Seconds of playback before a replay counts. */
+export const REPLAY_COUNTS_AFTER_SECONDS = 30;
+
+/**
+ * Counts a replay once per listener per recording per Lagos day (requirement
+ * 29). Signed-in listeners by account; visitors by a random device id, hashed.
+ */
+export async function countReplay(
+  db: D1Database,
+  input: { recordingId: string; listenerKey: string; day: string },
+): Promise<boolean> {
+  const inserted = await db
+    .prepare("INSERT OR IGNORE INTO replays (recording_id, listener_key, day) VALUES (?, ?, ?)")
+    .bind(input.recordingId, input.listenerKey, input.day)
+    .run();
+  if (!inserted.meta.changes) return false;
+  await db.prepare("UPDATE recordings SET replay_count = replay_count + 1 WHERE id = ?").bind(input.recordingId).run();
+  return true;
+}
