@@ -28,6 +28,25 @@ export const socialApi = api.injectEndpoints({
       },
       invalidatesTags: [{ type: "Follow", id: "LIST" }, "Preacher"],
     }),
+    setFollowNotifications: build.mutation<FollowState, { slug: string; notificationsEnabled: boolean }>({
+      query: ({ slug, notificationsEnabled }) => ({ url: `/preachers/${slug}/follow`, method: "PATCH", body: { notificationsEnabled } }),
+      async onQueryStarted({ slug, notificationsEnabled }, { dispatch, queryFulfilled }) {
+        const patches = [
+          dispatch(socialApi.util.updateQueryData("getFollowState", slug, (draft) => void (draft.notificationsEnabled = notificationsEnabled))),
+          dispatch(
+            socialApi.util.updateQueryData("listFollowing", undefined, (draft) => {
+              const preacher = draft.find((item) => item.slug === slug);
+              if (preacher) preacher.notificationsEnabled = notificationsEnabled;
+            }),
+          ),
+        ];
+        try {
+          await queryFulfilled;
+        } catch {
+          patches.forEach((patch) => patch.undo());
+        }
+      },
+    }),
     listFollowing: build.query<FollowedPreacher[], void>({
       query: () => "/me/following",
       providesTags: [{ type: "Follow", id: "LIST" }],
@@ -35,4 +54,4 @@ export const socialApi = api.injectEndpoints({
   }),
 });
 
-export const { useGetFollowStateQuery, useSetFollowingMutation, useListFollowingQuery } = socialApi;
+export const { useGetFollowStateQuery, useSetFollowingMutation, useListFollowingQuery, useSetFollowNotificationsMutation } = socialApi;

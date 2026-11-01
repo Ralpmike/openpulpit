@@ -8,3 +8,5 @@ export const pushSubscriptionSchema = z.object({
 });
 
 export const pushUnsubscribeSchema = z.object({ endpoint: z.url().max(1000) });
+
+export const followNotificationsSchema = z.object({ notificationsEnabled: z.boolean() });
