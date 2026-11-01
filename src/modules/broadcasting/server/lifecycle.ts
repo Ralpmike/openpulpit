@@ -160,6 +160,7 @@ export async function syncBroadcast(env: CloudflareEnv, broadcastId: string, now
   const isPublishing = Boolean(publisher?.tracks.some((track) => track.type === TrackType.AUDIO && !track.muted));
   if (isPublishing && broadcast.status === "ready") await markLive(env, broadcastId, now);
   if (isPublishing && broadcast.publisher_left_at) await markPublisherBack(env.DB, broadcastId);
+  if (!isPublishing && broadcast.status === "live") await markPublisherLeft(env.DB, broadcastId, now);
   await setListenerCount(env.DB, broadcastId, participants.filter((p) => p.identity !== broadcast!.preacher_id).length, now);
 
   broadcast = (await getBroadcast(env.DB, broadcastId))!;

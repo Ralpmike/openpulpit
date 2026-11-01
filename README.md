@@ -51,3 +51,12 @@ Open http://localhost:3000.
 ## LiveKit
 
 Live audio runs on LiveKit. For local work run `livekit-server --dev` (keys `devkey` / `secret`, URL `ws://localhost:7880`, already in `.dev.vars.example`). For staging and production create a LiveKit Cloud project per environment, set `LIVEKIT_URL` in `wrangler.jsonc` and `LIVEKIT_API_KEY` / `LIVEKIT_API_SECRET` as secrets, and point its webhook at `/api/webhooks/livekit`.
+
+## Monitoring
+
+`worker.ts` wraps the OpenNext Worker and adds a 15-minute cron (`triggers.crons` in `wrangler.jsonc`) that calls `POST /api/internal/cron` with `CRON_SECRET`. It:
+
+- ends live broadcasts whose preacher's app stopped sending heartbeats (after the reconnect grace) and applies the hours cap to them;
+- compares today's bandwidth and LiveKit minutes with `COST_ALERT_DAILY_BANDWIDTH_GB` / `COST_ALERT_DAILY_LIVEKIT_MINUTES`, and flags failed recordings; each alert is emailed to `ALERT_EMAIL` at most once a day and logged.
+
+Test it locally with `npx wrangler dev --test-scheduled` and `curl "localhost:8787/__scheduled?cron=*/15+*+*+*+*"`.

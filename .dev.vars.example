@@ -13,3 +13,4 @@ VAPID_SUBJECT=mailto:hello@openpulpit.app
 EMAIL_API_KEY=
 EMAIL_FROM=OpenPulpit <no-reply@openpulpit.app>
 RATE_LIMIT_SALT=change-me
+CRON_SECRET=change-me-to-a-long-random-string
