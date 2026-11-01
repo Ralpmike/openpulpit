@@ -24,3 +24,15 @@ export interface AuditRow {
   createdAt: string;
 }
 
+
+export interface PlatformStats {
+  preachers: number;
+  listeners: number;
+  broadcasts: number;
+  liveNow: number;
+  hoursStreamed: number;
+  listenHours: number;
+  bandwidthGb: number;
+  days: { day: string; broadcastHours: number; listenHours: number; bandwidthGb: number }[];
+}
+
