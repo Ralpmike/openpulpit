@@ -26,6 +26,10 @@ export const broadcastingApi = api.injectEndpoints({
       query: (broadcastId) => `/broadcasts/${broadcastId}`,
       providesTags: (_result, _error, id) => [{ type: "Broadcast", id }],
     }),
+    listLiveNow: build.query<PublicBroadcast[], void>({
+      query: () => "/live-now",
+      providesTags: ["LiveNow"],
+    }),
     getListenToken: build.mutation<ListenGrant, string>({
       query: (broadcastId) => ({ url: `/broadcasts/${broadcastId}/listen-token`, method: "POST" }),
     }),
@@ -40,4 +44,5 @@ export const {
   useSyncBroadcastMutation,
   useEndBroadcastMutation,
   useGetBroadcastQuery,
+  useListLiveNowQuery,
 } = broadcastingApi;
