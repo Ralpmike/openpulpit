@@ -47,3 +47,7 @@ Open http://localhost:3000.
 - `.github/workflows/ci.yml`: every pull request into `dev` or `main` runs typecheck, lint, tests, migrations on a fresh local D1 and the OpenNext build, then uploads a preview version of the staging Worker (`pr-<number>` alias; the URL is in the job summary).
 - `.github/workflows/deploy.yml`: a push to `dev` deploys staging, a push to `main` deploys production, migrations first.
 - Both need the repository secrets `CLOUDFLARE_API_TOKEN` (Workers, D1 and R2 edit) and `CLOUDFLARE_ACCOUNT_ID`; until they're set, the preview and deploy jobs skip themselves. Create GitHub environments `staging` and `production` (add required reviewers on `production`).
+
+## LiveKit
+
+Live audio runs on LiveKit. For local work run `livekit-server --dev` (keys `devkey` / `secret`, URL `ws://localhost:7880`, already in `.dev.vars.example`). For staging and production create a LiveKit Cloud project per environment, set `LIVEKIT_URL` in `wrangler.jsonc` and `LIVEKIT_API_KEY` / `LIVEKIT_API_SECRET` as secrets, and point its webhook at `/api/webhooks/livekit`.
