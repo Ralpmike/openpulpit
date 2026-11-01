@@ -12,3 +12,10 @@ export function dataUseLabel(kbps: number = DEFAULT_AUDIO_KBPS): string {
   const rounded = mb < 20 ? Math.round(mb) : Math.round(mb / 5) * 5;
   return `About ${rounded} MB per hour`;
 }
+
+/** "About 9 MB" for a whole recording, from its length and bitrate. */
+export function recordingDataLabel(durationSeconds: number, kbps: number = DEFAULT_AUDIO_KBPS): string {
+  const mb = (kbps * durationSeconds) / 8 / 1000;
+  if (mb < 1) return "Less than 1 MB";
+  return `About ${mb < 20 ? Math.round(mb) : Math.round(mb / 5) * 5} MB`;
+}

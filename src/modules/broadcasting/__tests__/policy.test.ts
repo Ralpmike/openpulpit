@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { dataUseLabel, mbPerHour } from "@/helpers/audio/dataUse";
+import { dataUseLabel, mbPerHour, recordingDataLabel } from "@/helpers/audio/dataUse";
 import { lagosDay, lagosMonthStart, nextLagosMonthStart } from "@/helpers/time/lagos";
 import { hoursAction, publishRefusal, remainingSeconds, usedSeconds, type PublishCheck } from "@/modules/broadcasting/server/policy";
 
@@ -62,5 +62,7 @@ describe("data budget", () => {
     expect(mbPerHour(32)).toBe(14.4);
     expect(dataUseLabel()).toBe("About 14 MB per hour");
     expect(dataUseLabel(64)).toBe("About 30 MB per hour");
+    expect(recordingDataLabel(2700)).toBe("About 11 MB");
+    expect(recordingDataLabel(120)).toBe("Less than 1 MB");
   });
 });
