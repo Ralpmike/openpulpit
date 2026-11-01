@@ -8,7 +8,8 @@ import {
 export const API_BASE_URL = "/api";
 
 const rawBaseQuery = fetchBaseQuery({
-  baseUrl: API_BASE_URL,
+  // Absolute in the browser (and jsdom), so Request() never sees a relative URL.
+  baseUrl: typeof window !== "undefined" ? `${window.location.origin}${API_BASE_URL}` : API_BASE_URL,
   credentials: "same-origin",
 });
 
