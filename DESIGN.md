@@ -58,7 +58,7 @@ One family, Geist, self-hosted through `next/font` with the Latin subset only. H
 - Radius `0.75rem` (`rounded-lg`); avatars are round; badges are pills.
 - Elevation: borders first, Tailwind's default shadows only on floating surfaces (player bar, menus).
 - Fixed chrome, bottom to top: bottom nav (`h-nav`, 4rem, `z-nav`), player bar (`h-player`, 4.5rem, `z-player`, `bottom-above-nav`), sticky header (`z-header`). Pages pad for them with `pb-chrome`, and fixed elements respect the safe area (`pb-safe`).
-- Touch targets are at least 44px (`min-h-11`, `size-11`).
+- Touch targets are at least 44px (`min-h-11`, `size-11`). The shadcn atoms are raised for phones: `Button` default `h-11`, `lg` `h-12`, `icon` `size-11`; `Input` and `Select` `h-11` with 16px text (no zoom on iOS); `Tabs` `h-11`.
 
 ## Components
 
