@@ -1,10 +1,11 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useRef, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, type ReactNode } from "react";
 
 import { useAppDispatch, useAppSelector } from "@/hooks/store";
 import { setMediaPlaybackState, setMediaSession } from "@/modules/player/mediaSession";
 import { useLiveAudio, type LiveAudioState } from "@/modules/player/useLiveAudio";
+import { useReplayAudio, type UseReplayAudioReturn } from "@/modules/player/useReplayAudio";
 import { pause, resume, setPrefersHighQuality, stop } from "@/store/playerSlice";
 
 const QUALITY_KEY = "openpulpit.audioQuality";
@@ -14,6 +15,7 @@ interface PlayerContextValue {
   liveState: LiveAudioState;
   liveErrorMessage: string | null;
   unblockAudio: () => void;
+  replay: UseReplayAudioReturn;
 }
 
 const PlayerContext = createContext<PlayerContextValue | null>(null);
@@ -31,10 +33,16 @@ export function usePlayer(): PlayerContextValue {
  */
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const dispatch = useAppDispatch();
-  const { nowPlaying, isPlaying, prefersHighQuality } = useAppSelector((state) => state.player);
+  const { nowPlaying, isPlaying, prefersHighQuality, speed } = useAppSelector((state) => state.player);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const liveId = nowPlaying?.kind === "live" ? nowPlaying.id : null;
   const live = useLiveAudio(liveId, isPlaying, audioRef, prefersHighQuality);
+  const onReplayEnded = useCallback(() => dispatch(pause()), [dispatch]);
+  const replay = useReplayAudio(nowPlaying, isPlaying, speed, audioRef, onReplayEnded);
+  const replaySeekRef = useRef<(delta: number) => void>(() => undefined);
+  useEffect(() => {
+    replaySeekRef.current = (delta) => replay.seek(replay.currentTime + delta);
+  }, [replay]);
 
   // Remember "Higher quality on Wi-Fi" on this device (a per-viewer convenience, so localStorage).
   useEffect(() => {
@@ -58,6 +66,14 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       onPause: () => dispatch(pause()),
       onStop: () => dispatch(stop()),
     });
+    if (nowPlaying?.kind === "replay" && typeof navigator !== "undefined" && "mediaSession" in navigator) {
+      try {
+        navigator.mediaSession.setActionHandler("seekbackward", () => replaySeekRef.current(-15));
+        navigator.mediaSession.setActionHandler("seekforward", () => replaySeekRef.current(30));
+      } catch {
+        // unsupported
+      }
+    }
   }, [nowPlaying, dispatch]);
 
   useEffect(() => {
@@ -65,8 +81,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, [nowPlaying, isPlaying]);
 
   const value = useMemo(
-    () => ({ audioRef, liveState: live.state, liveErrorMessage: live.errorMessage, unblockAudio: live.unblock }),
-    [live.state, live.errorMessage, live.unblock],
+    () => ({ audioRef, liveState: live.state, liveErrorMessage: live.errorMessage, unblockAudio: live.unblock, replay }),
+    [live.state, live.errorMessage, live.unblock, replay],
   );
 
   return (
