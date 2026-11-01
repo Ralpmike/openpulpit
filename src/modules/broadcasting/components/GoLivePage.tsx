@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/atoms/button";
 import { StatusDialog } from "@/components/ui/molecules/StatusDialog";
 import { useElapsedTime } from "@/hooks/useElapsedTime";
+import { useWakeLock } from "@/hooks/useWakeLock";
 import { LoaderButton } from "@/components/ui/molecules/LoaderButton";
 import { getErrorMessage } from "@/helpers/api/getErrorMessage";
 import { BiblePassage, BroadcastDetailsForm } from "@/modules/broadcasting/components/BroadcastDetailsForm";
@@ -58,6 +59,7 @@ export function GoLivePage() {
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
   const [endedMessage, setEndedMessage] = useState<string | null>(null);
   const elapsedSeconds = useElapsedTime(startedAt);
+  useWakeLock(step === "live");
   const { disconnect } = live;
   const broadcastId = broadcast?.id;
 
@@ -156,6 +158,12 @@ export function GoLivePage() {
             <p className="text-sm text-muted-foreground">Allow your microphone to go live.</p>
           ) : null}
         </div>
+      ) : null}
+
+      {step === "live" && live.connectionState === "failed" && live.errorMessage ? (
+        <Alert variant="destructive" data-testid="reconnect-failed">
+          <AlertDescription>{live.errorMessage}</AlertDescription>
+        </Alert>
       ) : null}
 
       {step === "live" ? (
