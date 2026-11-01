@@ -12,3 +12,17 @@ export interface Me {
   status: UserStatus;
   hasAcceptedTerms: boolean;
 }
+
+/** A preacher's public profile (requirement 3). */
+export interface PreacherProfile {
+  userId: string;
+  slug: string;
+  displayName: string;
+  bio: string;
+  ministry: string;
+  state: string;
+  city: string;
+  denomination: string;
+  photoUrl: string | null;
+  isVerified: boolean;
+}

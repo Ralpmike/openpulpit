@@ -90,3 +90,68 @@ export function decideApplicationStatement(
     )
     .bind(decision.status, new Date().toISOString(), decision.adminId, decision.id);
 }
+
+export interface PreacherProfileRow {
+  user_id: string;
+  slug: string;
+  display_name: string;
+  bio: string;
+  ministry: string;
+  state: string;
+  city: string;
+  denomination: string;
+  photo_key: string;
+  is_verified: number;
+}
+
+const PROFILE_COLUMNS =
+  "p.user_id, p.slug, p.display_name, p.bio, p.ministry, p.state, p.city, p.denomination, p.photo_key, p.is_verified";
+
+export async function getProfileByUserId(db: D1Database, userId: string): Promise<PreacherProfileRow | null> {
+  return db.prepare(`SELECT ${PROFILE_COLUMNS} FROM preacher_profiles p WHERE p.user_id = ?`).bind(userId).first();
+}
+
+/** Public lookup: only preachers in good standing are shown. */
+export async function getPublicProfileBySlug(db: D1Database, slug: string): Promise<PreacherProfileRow | null> {
+  return db
+    .prepare(
+      `SELECT ${PROFILE_COLUMNS} FROM preacher_profiles p JOIN "user" u ON u.id = p.user_id
+        WHERE p.slug = ? AND u.role IN ('preacher', 'admin') AND u.status IN ('active', 'warned')`,
+    )
+    .bind(slug)
+    .first();
+}
+
+export async function isSlugTaken(db: D1Database, slug: string, exceptUserId: string): Promise<boolean> {
+  const row = await db
+    .prepare("SELECT 1 AS taken FROM preacher_profiles WHERE slug = ? AND user_id <> ?")
+    .bind(slug, exceptUserId)
+    .first();
+  return Boolean(row);
+}
+
+export async function upsertProfile(
+  db: D1Database,
+  userId: string,
+  profile: { displayName: string; slug: string; ministry: string; state: string; city: string; denomination: string; bio: string },
+): Promise<void> {
+  const now = new Date().toISOString();
+  await db.batch([
+    db
+      .prepare(
+        `INSERT INTO preacher_profiles (user_id, slug, display_name, bio, ministry, state, city, denomination, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT (user_id) DO UPDATE SET slug = excluded.slug, display_name = excluded.display_name,
+           bio = excluded.bio, ministry = excluded.ministry, state = excluded.state, city = excluded.city,
+           denomination = excluded.denomination, updated_at = excluded.updated_at`,
+      )
+      .bind(userId, profile.slug, profile.displayName, profile.bio, profile.ministry, profile.state, profile.city, profile.denomination, now),
+    db.prepare(`UPDATE "user" SET name = ?, updatedAt = ? WHERE id = ?`).bind(profile.displayName, now, userId),
+  ]);
+}
+
+export function setPhotoKeyStatement(db: D1Database, userId: string, photoKey: string) {
+  return db
+    .prepare("UPDATE preacher_profiles SET photo_key = ?, updated_at = ? WHERE user_id = ?")
+    .bind(photoKey, new Date().toISOString(), userId);
+}
