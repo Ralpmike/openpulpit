@@ -5,3 +5,4 @@ export { getPublicProfileBySlug, getProfileByUserId } from "@/modules/accounts/s
 export { toPreacherProfile, photoUrl } from "@/modules/accounts/server/profiles";
 export type { PreacherProfile } from "@/modules/accounts/models";
 export { listSuggestedPreachers, type SuggestedPreacher } from "@/modules/accounts/server/suggestions";
+export { searchPreachers } from "@/modules/accounts/server/search";

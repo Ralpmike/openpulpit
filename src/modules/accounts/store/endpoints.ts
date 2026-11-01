@@ -1,5 +1,11 @@
 import { api } from "@/store/api";
 import type { Me, PreacherProfile } from "@/modules/accounts/models";
+import type { PreacherSummary } from "@/modules/broadcasting/models";
+
+export interface PreacherSearchResult extends PreacherSummary {
+  ministry: string;
+  location: string;
+}
 import type { PreacherProfileFormValues } from "@/modules/accounts/schemas/profile";
 import type { PreacherApplicationFormValues, VerificationRequestFormValues } from "@/modules/accounts/schemas/auth";
 
@@ -59,6 +65,11 @@ export const accountsApi = api.injectEndpoints({
       query: () => ({ url: "/account/photo", method: "DELETE" }),
       invalidatesTags: ["Me"],
     }),
+    searchPreachers: build.query<PreacherSearchResult[], string>({
+      query: (q) => `/preachers/search?q=${encodeURIComponent(q)}`,
+      providesTags: ["Preacher"],
+      keepUnusedDataFor: 300,
+    }),
     getRoleOptions: build.query<RoleOptions, void>({
       query: () => "/account/role-options",
       providesTags: ["Me"],
@@ -79,6 +90,7 @@ export const {
   useSaveMyProfileMutation,
   useUploadMyPhotoMutation,
   useGetVerificationQuery,
+  useSearchPreachersQuery,
   useUpdateMyNameMutation,
   useUploadAccountPhotoMutation,
   useRemoveAccountPhotoMutation,
