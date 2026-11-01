@@ -18,6 +18,7 @@ import { getHoursSummary } from "@/modules/broadcasting/server/service";
 type Listener = (env: CloudflareEnv, broadcast: BroadcastRow) => Promise<void>;
 const onLiveListeners: Listener[] = [];
 const onEndedListeners: Listener[] = [];
+const onSyncedListeners: Listener[] = [];
 
 /** Other modules react to lifecycle moves (recording, notifications) without a dependency cycle. */
 export function onBroadcastLive(listener: Listener) {
@@ -25,6 +26,10 @@ export function onBroadcastLive(listener: Listener) {
 }
 export function onBroadcastEnded(listener: Listener) {
   onEndedListeners.push(listener);
+}
+/** After each sync of a live broadcast where the preacher is publishing (e.g. to retry a recording start). */
+export function onBroadcastPublishing(listener: Listener) {
+  onSyncedListeners.push(listener);
 }
 
 async function emit(listeners: Listener[], env: CloudflareEnv, broadcastId: string) {
@@ -122,6 +127,7 @@ export async function syncBroadcast(env: CloudflareEnv, broadcastId: string, now
 
   broadcast = (await getBroadcast(env.DB, broadcastId))!;
   if (broadcast.status !== "live") return { broadcast, remainingSeconds: 0, isHoursWarning: false };
+  if (isPublishing) await emit(onSyncedListeners, env, broadcastId);
   const hours = await getHoursSummary(env.DB, broadcast.preacher_id, getLimits(env).freeMonthlyBroadcastMinutes, now);
   const action = hoursAction(hours.remainingSeconds, Boolean(broadcast.hours_warning_at));
   if (action === "end") {
