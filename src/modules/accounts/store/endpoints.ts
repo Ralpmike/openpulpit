@@ -43,6 +43,22 @@ export const accountsApi = api.injectEndpoints({
       query: (body) => ({ url: "/verification", method: "POST", body }),
       invalidatesTags: [{ type: "Preacher", id: "VERIFICATION" }],
     }),
+    updateMyName: build.mutation<{ name: string }, { name: string }>({
+      query: (body) => ({ url: "/account", method: "PATCH", body }),
+      invalidatesTags: ["Me"],
+    }),
+    uploadAccountPhoto: build.mutation<{ photoUrl: string | null }, Blob>({
+      query: (photo) => {
+        const body = new FormData();
+        body.append("photo", photo, "photo.webp");
+        return { url: "/account/photo", method: "POST", body };
+      },
+      invalidatesTags: ["Me"],
+    }),
+    removeAccountPhoto: build.mutation<{ photoUrl: null }, void>({
+      query: () => ({ url: "/account/photo", method: "DELETE" }),
+      invalidatesTags: ["Me"],
+    }),
     getRoleOptions: build.query<RoleOptions, void>({
       query: () => "/account/role-options",
       providesTags: ["Me"],
@@ -63,5 +79,8 @@ export const {
   useSaveMyProfileMutation,
   useUploadMyPhotoMutation,
   useGetVerificationQuery,
+  useUpdateMyNameMutation,
+  useUploadAccountPhotoMutation,
+  useRemoveAccountPhotoMutation,
   useRequestVerificationMutation,
   useGetMeQuery, useGetRoleOptionsQuery, useChooseToPreachMutation, useApplyToPreachMutation } = accountsApi;
