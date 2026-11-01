@@ -22,12 +22,12 @@ const LIVE_STATUS: Record<string, string> = {
 export function PlayerBar() {
   const dispatch = useAppDispatch();
   const { nowPlaying, isPlaying } = useAppSelector((state) => state.player);
-  const { liveState, unblockAudio } = usePlayer();
+  const { liveState, unblockAudio, replay } = usePlayer();
   if (!nowPlaying) return null;
 
   const isLive = nowPlaying.kind === "live";
   const status = isLive && isPlaying ? LIVE_STATUS[liveState] : undefined;
-  const isBusy = isLive && isPlaying && (liveState === "connecting" || liveState === "reconnecting");
+  const isBusy = isPlaying && (isLive ? liveState === "connecting" || liveState === "reconnecting" : replay.isBuffering);
   const href = isLive ? `/live/${nowPlaying.id}` : `/r/${nowPlaying.id}`;
 
   return (
@@ -36,6 +36,11 @@ export function PlayerBar() {
       data-testid="player-bar"
       className="fixed inset-x-0 bottom-above-nav z-player border-t bg-card/95 shadow-lg supports-backdrop-filter:backdrop-blur-sm"
     >
+      {!isLive && replay.duration ? (
+        <div className="h-0.5 w-full bg-muted" aria-hidden>
+          <div className="h-full origin-left bg-primary" style={{ transform: `scaleX(${Math.min(1, replay.currentTime / replay.duration)})` }} />
+        </div>
+      ) : null}
       <div className="mx-auto flex h-player max-w-xl items-center gap-3 px-4">
         <PreacherAvatar name={nowPlaying.preacherName} photoUrl={nowPlaying.artworkUrl ?? null} size="sm" />
         <Link href={href} className="flex min-w-0 flex-1 flex-col focus-visible:outline-2 focus-visible:outline-ring">
