@@ -12,6 +12,8 @@ Requires Node.js 22 or newer.
 
 ```bash
 npm install
+cp .dev.vars.example .dev.vars   # local secrets, never committed
+npm run db:migrate:local
 npm run dev
 ```
 
@@ -24,7 +26,16 @@ Open http://localhost:3000.
 | `npm run dev` | Next.js dev server |
 | `npm run check` | Generate route types and type-check |
 | `npm run lint` | ESLint |
-| `npm run build` | Production build |
+| `npm run build` | Next.js production build |
+| `npm run preview` | OpenNext build, then the real Worker locally with local D1 and R2 |
+| `npm run cf-typegen` | Regenerate `cloudflare-env.d.ts` after changing `wrangler.jsonc` or `.dev.vars.example` |
+| `npm run db:migrate:local` | Apply D1 migrations to the local database |
+| `npm run deploy:staging` / `deploy:production` | Build and deploy to Cloudflare |
+| `npm run db:migrate:staging` / `db:migrate:production` | Apply migrations remotely (before deploying code that needs them) |
+
+## Cloudflare setup (once)
+
+`wrangler.jsonc` has three setups: local (top level), `staging` (from `dev`) and `production` (from `main`). Create the remote resources with the commands at the top of `wrangler.jsonc`, paste the D1 ids in place of `REPLACE_WITH_…`, and set each secret from `.dev.vars.example` with `npx wrangler secret put NAME --env staging` (and `--env production`). `GET /api/health` answers `{"status":"ok"}` when the Worker and D1 are up.
 
 ## Branches
 
