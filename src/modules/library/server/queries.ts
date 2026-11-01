@@ -63,3 +63,12 @@ export async function listPreacherRecordings(db: D1Database, preacherId: string,
     .all<RecordingJoinRow>();
   return results.map(toPublicRecording);
 }
+
+/** The public recording made from a broadcast, if it is ready. */
+export async function getPublicRecordingIdForBroadcast(db: D1Database, broadcastId: string): Promise<string | null> {
+  const row = await db
+    .prepare(`SELECT r.id ${RECORDING_JOINS} WHERE r.broadcast_id = ? AND ${PUBLIC_RECORDING_FILTER}`)
+    .bind(broadcastId)
+    .first<{ id: string }>();
+  return row?.id ?? null;
+}
