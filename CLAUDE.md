@@ -11,7 +11,7 @@ Next.js (App Router) + TypeScript, Tailwind v4, shadcn/ui, lucide-react, Redux T
 
 ## Commands
 Set up in OP-1 to OP-3; until then the repo has docs and skills only.
-`npm run dev` · `npm run check` (tsc) · `npm run lint` · `npm test` · `npm run build` · `npm run preview` (OpenNext, real Worker locally) · `npm run deploy` · `npm run db:migrate:local` · `npm run db:migrate:remote` · `npm run db:seed:local` · `npm run cf-typegen`
+`npm run dev` · `npm run check` (typegen + tsc) · `npm run lint` · `npm test` · `npm run build` · `npm run preview` (OpenNext, real Worker locally) · `npm run deploy:staging` / `deploy:production` · `npm run db:migrate:local` / `db:migrate:staging` / `db:migrate:production` · `npm run db:seed:local` · `npm run cf-typegen` (after changing `wrangler.jsonc` or `.dev.vars.example`)
 
 ## Ground rules
 - Mobile first and light on data: first load under 3 s on 3G, play within 3 s, default audio about 32 kbps Opus (under 15 MB an hour).

@@ -1,0 +1,96 @@
+// OpenPulpit: one Worker built by OpenNext. Top level = local development.
+// `env.staging` deploys from `dev`, `env.production` from `main`.
+// Bindings are NOT inherited by environments, so each one lists them all.
+// Create the remote resources once, then paste their ids below:
+//   npx wrangler d1 create openpulpit-db-staging
+//   npx wrangler d1 create openpulpit-db
+//   npx wrangler r2 bucket create openpulpit-recordings-staging
+//   npx wrangler r2 bucket create openpulpit-recordings
+//   npx wrangler r2 bucket create openpulpit-opennext-cache-staging
+//   npx wrangler r2 bucket create openpulpit-opennext-cache
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "openpulpit-local",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "openpulpit-local" }],
+  "observability": { "enabled": true },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "openpulpit-db-local",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    { "binding": "RECORDINGS", "bucket_name": "openpulpit-recordings-local" },
+    { "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "openpulpit-opennext-cache-local" }
+  ],
+  "images": { "binding": "IMAGES" },
+  "vars": {
+    "APP_ENV": "local",
+    "APP_URL": "http://localhost:3000",
+    "LIVEKIT_URL": "ws://localhost:7880",
+    "FREE_MONTHLY_BROADCAST_MINUTES": "600",
+    "FREE_RECORDING_LIMIT": "20",
+    "RECONNECT_GRACE_SECONDS": "60",
+    "VAPID_PUBLIC_KEY": ""
+  },
+  "env": {
+    "staging": {
+      "name": "openpulpit-staging",
+      "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "openpulpit-staging" }],
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "openpulpit-db-staging",
+          "database_id": "REPLACE_WITH_STAGING_D1_ID",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "r2_buckets": [
+        { "binding": "RECORDINGS", "bucket_name": "openpulpit-recordings-staging" },
+        { "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "openpulpit-opennext-cache-staging" }
+      ],
+      "images": { "binding": "IMAGES" },
+      "vars": {
+        "APP_ENV": "staging",
+        "APP_URL": "https://openpulpit-staging.workers.dev",
+        "LIVEKIT_URL": "wss://REPLACE_WITH_STAGING_LIVEKIT_HOST",
+        "FREE_MONTHLY_BROADCAST_MINUTES": "600",
+        "FREE_RECORDING_LIMIT": "20",
+        "RECONNECT_GRACE_SECONDS": "60",
+        "VAPID_PUBLIC_KEY": ""
+      }
+    },
+    "production": {
+      "name": "openpulpit",
+      "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "openpulpit" }],
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "openpulpit-db",
+          "database_id": "REPLACE_WITH_PRODUCTION_D1_ID",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "r2_buckets": [
+        { "binding": "RECORDINGS", "bucket_name": "openpulpit-recordings" },
+        { "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "openpulpit-opennext-cache" }
+      ],
+      "images": { "binding": "IMAGES" },
+      "vars": {
+        "APP_ENV": "production",
+        "APP_URL": "https://openpulpit.workers.dev",
+        "LIVEKIT_URL": "wss://REPLACE_WITH_PRODUCTION_LIVEKIT_HOST",
+        "FREE_MONTHLY_BROADCAST_MINUTES": "600",
+        "FREE_RECORDING_LIMIT": "20",
+        "RECONNECT_GRACE_SECONDS": "60",
+        "VAPID_PUBLIC_KEY": ""
+      }
+    }
+  }
+}
