@@ -196,7 +196,7 @@ export function GoLivePage() {
         actions={
           <>
             <Button asChild>
-              <Link href="/profile/edit">Go to your profile</Link>
+              <Link href="/profile/recordings">See your sermons</Link>
             </Button>
             <Button variant="outline" asChild>
               <Link href="/">Back to home</Link>

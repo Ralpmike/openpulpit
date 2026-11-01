@@ -14,3 +14,17 @@ export interface PublicRecording {
   createdAt: string;
   preacher: PreacherSummary;
 }
+
+/** A recording as its preacher sees it in "Your sermons". */
+export interface MyRecording {
+  id: string;
+  title: string;
+  description: string;
+  biblePassage: string;
+  status: RecordingStatus;
+  visibility: RecordingVisibility;
+  durationSeconds: number;
+  createdAt: string;
+  replayCount: number;
+  peakListeners: number;
+}
