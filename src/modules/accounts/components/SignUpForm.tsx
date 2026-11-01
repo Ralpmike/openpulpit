@@ -8,6 +8,7 @@ import { FieldGroup } from "@/components/ui/atoms/field";
 import { FormFieldInput } from "@/components/ui/molecules/FormFieldInput";
 import { LoaderButton } from "@/components/ui/molecules/LoaderButton";
 import { RoleChoiceField } from "@/modules/accounts/components/RoleChoiceField";
+import { TermsField } from "@/modules/accounts/components/TermsField";
 import { signUpSchema, type SignUpFormValues } from "@/modules/accounts/schemas/auth";
 
 export interface SignUpFormProps {
@@ -20,7 +21,7 @@ export interface SignUpFormProps {
 export function SignUpForm({ onSubmit, children, isSubmitDisabled = false }: SignUpFormProps) {
   const form = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { name: "", email: "", password: "", role: "listener" },
+    defaultValues: { name: "", email: "", password: "", role: "listener", acceptsTerms: false as unknown as true },
   });
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} noValidate data-testid="sign-up-form">
@@ -37,6 +38,7 @@ export function SignUpForm({ onSubmit, children, isSubmitDisabled = false }: Sig
           data-testid="sign-up-password"
         />
         <RoleChoiceField control={form.control} />
+        <TermsField control={form.control} name="acceptsTerms" />
         {children}
         <LoaderButton type="submit" size="lg" disabled={isSubmitDisabled} isLoading={form.formState.isSubmitting} loadingLabel="Creating your account…" data-testid="sign-up-button">
           Create account

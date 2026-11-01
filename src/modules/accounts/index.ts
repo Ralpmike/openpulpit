@@ -6,3 +6,5 @@ export { toPreacherProfile, photoUrl } from "@/modules/accounts/server/profiles"
 export type { PreacherProfile } from "@/modules/accounts/models";
 export { listSuggestedPreachers, type SuggestedPreacher } from "@/modules/accounts/server/suggestions";
 export { searchPreachers } from "@/modules/accounts/server/search";
+export { requireAcceptedTerms } from "@/modules/accounts/server/terms";
+export { CURRENT_TERMS_VERSION } from "@/modules/accounts/terms";

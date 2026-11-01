@@ -9,7 +9,8 @@ import { FieldSeparator } from "@/components/ui/atoms/field";
 import { authClient, authErrorMessage } from "@/lib/authClient";
 import { GoogleSignInButton } from "@/modules/accounts/components/GoogleSignInButton";
 import { SignUpForm } from "@/modules/accounts/components/SignUpForm";
-import { useChooseToPreachMutation } from "@/modules/accounts/store/endpoints";
+import { useAcceptTermsMutation, useChooseToPreachMutation } from "@/modules/accounts/store/endpoints";
+import { CURRENT_TERMS_VERSION } from "@/modules/accounts/terms";
 import { useAfterSignIn } from "@/modules/accounts/components/useAfterSignIn";
 import type { SignUpFormValues } from "@/modules/accounts/schemas/auth";
 
@@ -23,12 +24,16 @@ export function SignUpPage({ isGoogleEnabled }: SignUpPageProps) {
   const isGoogleError = searchParams.get("error") === "google";
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [chooseToPreach] = useChooseToPreachMutation();
+  const [acceptTerms] = useAcceptTermsMutation();
 
   async function signUp(values: SignUpFormValues) {
     setErrorMessage(null);
-    const { role, ...account } = values;
+    const { role, acceptsTerms: _acceptsTerms, ...account } = values;
+    void _acceptsTerms;
     const { error } = await authClient.signUp.email(account);
     if (error) return setErrorMessage(authErrorMessage(error));
+    // Recorded with its version; if this fails, the terms prompt asks again after sign-in.
+    await acceptTerms(CURRENT_TERMS_VERSION).unwrap().catch(() => undefined);
     if (role === "preacher") {
       try {
         await chooseToPreach().unwrap();
