@@ -23,6 +23,7 @@ import { useWakeLock } from "@/hooks/useWakeLock";
 import { LoaderButton } from "@/components/ui/molecules/LoaderButton";
 import { getErrorMessage } from "@/helpers/api/getErrorMessage";
 import { BiblePassage, BroadcastDetailsForm } from "@/modules/broadcasting/components/BroadcastDetailsForm";
+import { HoursRemaining } from "@/modules/broadcasting/components/HoursRemaining";
 import { LiveView } from "@/modules/broadcasting/components/LiveView";
 import { MicCheck } from "@/modules/broadcasting/components/MicCheck";
 import { useLiveBroadcast } from "@/modules/broadcasting/hooks/useLiveBroadcast";
@@ -32,6 +33,7 @@ import type { BroadcastDetailsFormValues } from "@/modules/broadcasting/schemas/
 import {
   useCreateBroadcastMutation,
   useEndBroadcastMutation,
+  useGetBroadcastHoursQuery,
   useSyncBroadcastMutation,
 } from "@/modules/broadcasting/store/endpoints";
 
@@ -54,6 +56,8 @@ export function GoLivePage() {
   const live = useLiveBroadcast();
   const [createBroadcast, { isLoading: isCreateBroadcastPending }] = useCreateBroadcastMutation();
   const [syncBroadcast] = useSyncBroadcastMutation();
+  const { data: hours, isLoading: isHoursLoading, isError: isHoursError } = useGetBroadcastHoursQuery();
+  const hasNoHoursLeft = hours !== undefined && hours.remainingSeconds <= 0;
   const [endBroadcast, { isLoading: isEndBroadcastPending }] = useEndBroadcastMutation();
   const [startedAt, setStartedAt] = useState<string | null>(null);
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
@@ -132,7 +136,13 @@ export function GoLivePage() {
         {step !== "details" && broadcast ? <BiblePassage passage={broadcast.biblePassage} /> : null}
       </div>
 
-      {step === "details" ? <BroadcastDetailsForm onSubmit={saveDetails} isSubmitting={isCreateBroadcastPending} /> : null}
+      {step === "details" || step === "check" ? (
+        <HoursRemaining hours={hours} isLoading={isHoursLoading} isError={isHoursError} />
+      ) : null}
+
+      {step === "details" && !hasNoHoursLeft ? (
+        <BroadcastDetailsForm onSubmit={saveDetails} isSubmitting={isCreateBroadcastPending} />
+      ) : null}
 
       {step === "check" ? (
         <div className="flex flex-col gap-5">
@@ -145,7 +155,7 @@ export function GoLivePage() {
           <LoaderButton
             size="lg"
             className="h-14 text-lg"
-            disabled={mic.permission !== "granted"}
+            disabled={mic.permission !== "granted" || hasNoHoursLeft}
             isLoading={isConnecting}
             loadingLabel="Going live…"
             onClick={() => setIsConfirmOpen(true)}

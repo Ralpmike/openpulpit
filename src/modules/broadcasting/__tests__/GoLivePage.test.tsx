@@ -31,9 +31,13 @@ import { renderWithStore } from "@/test/renderWithStore";
 describe("GoLivePage", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
-    globalThis.fetch = vi.fn(async () =>
-      Response.json({ data: { id: "b1", title: "Sunday Service", status: "ready" } }, { status: 201 }),
-    ) as typeof fetch;
+    globalThis.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = input instanceof Request ? input.url : String(input);
+      if (url.endsWith("/broadcasts/hours")) {
+        return Response.json({ data: { capSeconds: 36000, usedSeconds: 0, remainingSeconds: 36000, renewsAt: "2026-11-30T23:00:00.000Z" } });
+      }
+      return Response.json({ data: { id: "b1", title: "Sunday Service", status: "ready", biblePassage: "" } }, { status: 201 });
+    }) as typeof fetch;
     live.start.mockResolvedValue(true);
   });
 
@@ -57,6 +61,8 @@ describe("GoLivePage", () => {
     renderWithStore(<GoLivePage />);
     await userEvent.click(screen.getByTestId("details-next-button"));
     expect(screen.getByLabelText("Title")).toHaveAttribute("aria-invalid", "true");
-    expect(globalThis.fetch).not.toHaveBeenCalled();
+    expect(vi.mocked(globalThis.fetch).mock.calls.map(([input]) => String(input instanceof Request ? input.url : input))).not.toContainEqual(
+      expect.stringMatching(/\/api\/broadcasts$/),
+    );
   });
 });
