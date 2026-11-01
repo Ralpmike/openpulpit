@@ -10,6 +10,7 @@ import { PreacherCard } from "@/components/ui/molecules/PreacherCard";
 import { getDb } from "@/lib/cloudflare";
 import { getViewer } from "@/modules/accounts";
 import { listFollowing } from "@/modules/social";
+import { NotificationSettings } from "@/modules/social/components/NotificationSettings";
 
 export const metadata: Metadata = { title: "Following" };
 export const dynamic = "force-dynamic";
@@ -21,6 +22,7 @@ export default async function FollowingPage() {
   return (
     <div className="flex flex-col gap-4" data-testid="following-page">
       <h1 className="text-2xl font-semibold">Following</h1>
+      {following.length ? <NotificationSettings /> : null}
       {following.length ? (
         <ul className="flex flex-col">
           {following.map((preacher) => (
