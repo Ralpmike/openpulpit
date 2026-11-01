@@ -6,6 +6,8 @@ import { cache } from "react";
 import { Badge } from "@/components/ui/atoms/badge";
 import { PreacherAvatar } from "@/components/ui/molecules/PreacherAvatar";
 import { getDb } from "@/lib/cloudflare";
+import { shareMetadata } from "@/lib/metadata";
+import { ShareButtons } from "@/components/ui/molecules/ShareButtons";
 import { getPublicProfileBySlug, getViewer, toPreacherProfile } from "@/modules/accounts";
 import { listPreacherRecordings } from "@/modules/library";
 import { RecordingCard } from "@/modules/library/components/RecordingCard";
@@ -21,11 +23,7 @@ export async function generateMetadata({ params }: PageProps<"/p/[slug]">): Prom
   const profile = await loadProfile((await params).slug);
   if (!profile) return { title: "Preacher not found" };
   const description = profile.bio || `${profile.ministry}, ${profile.city}. Listen live and replay sermons on OpenPulpit.`;
-  return {
-    title: profile.displayName,
-    description,
-    openGraph: { title: profile.displayName, description, type: "profile", images: profile.photoUrl ? [profile.photoUrl] : [] },
-  };
+  return shareMetadata({ title: profile.displayName, description, path: `/p/${profile.slug}`, image: profile.photoUrl, type: "profile" });
 }
 
 export default async function PreacherPage({ params }: PageProps<"/p/[slug]">) {
@@ -60,6 +58,7 @@ export default async function PreacherPage({ params }: PageProps<"/p/[slug]">) {
       <div className="flex justify-center">
         <FollowButton slug={profile.slug} preacherName={profile.displayName} initialState={followState} isSignedIn={Boolean(viewer)} />
       </div>
+      <ShareButtons path={`/p/${profile.slug}`} text={`Listen to ${profile.displayName} on OpenPulpit`} />
       {profile.bio ? <p className="text-pretty whitespace-pre-line">{profile.bio}</p> : null}
       <section aria-labelledby="sermons-heading" className="flex flex-col gap-3">
         <h2 id="sermons-heading" className="text-lg font-semibold">
