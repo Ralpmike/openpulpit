@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/atoms/badge";
 import { PreacherAvatar } from "@/components/ui/molecules/PreacherAvatar";
 import { getDb } from "@/lib/cloudflare";
 import { getPublicProfileBySlug, toPreacherProfile } from "@/modules/accounts";
+import { listPreacherRecordings } from "@/modules/library";
+import { RecordingCard } from "@/modules/library/components/RecordingCard";
 
 const loadProfile = cache(async (slug: string) => {
   const row = await getPublicProfileBySlug(getDb(), slug.toLowerCase());
@@ -28,6 +30,7 @@ export default async function PreacherPage({ params }: PageProps<"/p/[slug]">) {
   const profile = await loadProfile((await params).slug);
   if (!profile) notFound();
   const location = [profile.city, profile.state].filter(Boolean).join(", ");
+  const recordings = await listPreacherRecordings(getDb(), profile.userId);
   return (
     <article className="flex flex-col gap-6" data-testid="preacher-page">
       <header className="flex flex-col items-center gap-3 text-center">
@@ -53,7 +56,19 @@ export default async function PreacherPage({ params }: PageProps<"/p/[slug]">) {
         <h2 id="sermons-heading" className="text-lg font-semibold">
           Sermons
         </h2>
-        <p className="text-sm text-muted-foreground">Broadcasts appear here when they end.</p>
+        {recordings.length ? (
+          <ul className="flex flex-col">
+            {recordings.map((recording) => (
+              <li key={recording.id}>
+                <RecordingCard recording={recording} showPreacher={false} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-muted-foreground" data-testid="sermons-empty-state">
+            No sermons yet. Follow to hear when {profile.displayName} goes live.
+          </p>
+        )}
       </section>
     </article>
   );
