@@ -47,3 +47,19 @@ describe("follows", () => {
     await expect(follow(setup(), listener, "nobody-here")).rejects.toMatchObject({ status: 404 });
   });
 });
+
+describe("per-preacher notifications", () => {
+  it("turns notifications off and on for one followed preacher only", async () => {
+    const { setNotifications } = await import("@/modules/social/server/follows");
+    const db = setup();
+    await follow(db, listener, "pastor-p1");
+    await follow(db, listener, "pastor-p2");
+    expect(await setNotifications(db, listener, "pastor-p1", false)).toMatchObject({ isFollowing: true, notificationsEnabled: false });
+    expect((await listFollowing(db, listener)).map((p) => [p.slug, p.notificationsEnabled])).toEqual([
+      ["pastor-p1", false],
+      ["pastor-p2", true],
+    ]);
+    await unfollow(db, listener, "pastor-p2");
+    await expect(setNotifications(db, listener, "pastor-p2", true)).rejects.toMatchObject({ status: 409 });
+  });
+});
