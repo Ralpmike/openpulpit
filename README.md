@@ -26,6 +26,7 @@ Open http://localhost:3000.
 | `npm run dev` | Next.js dev server |
 | `npm run check` | Generate route types and type-check |
 | `npm run lint` | ESLint |
+| `npm test` | Vitest (unit and component tests) |
 | `npm run build` | Next.js production build |
 | `npm run preview` | OpenNext build, then the real Worker locally with local D1 and R2 |
 | `npm run cf-typegen` | Regenerate `cloudflare-env.d.ts` after changing `wrangler.jsonc` or `.dev.vars.example` |
@@ -40,3 +41,9 @@ Open http://localhost:3000.
 ## Branches
 
 `dev` is staging and takes one pull request per ticket. `main` is production and only takes releases from `dev`.
+
+## CI and deploys
+
+- `.github/workflows/ci.yml`: every pull request into `dev` or `main` runs typecheck, lint, tests, migrations on a fresh local D1 and the OpenNext build, then uploads a preview version of the staging Worker (`pr-<number>` alias; the URL is in the job summary).
+- `.github/workflows/deploy.yml`: a push to `dev` deploys staging, a push to `main` deploys production, migrations first.
+- Both need the repository secrets `CLOUDFLARE_API_TOKEN` (Workers, D1 and R2 edit) and `CLOUDFLARE_ACCOUNT_ID`; until they're set, the preview and deploy jobs skip themselves. Create GitHub environments `staging` and `production` (add required reviewers on `production`).
