@@ -6,9 +6,11 @@ import { cache } from "react";
 import { Badge } from "@/components/ui/atoms/badge";
 import { PreacherAvatar } from "@/components/ui/molecules/PreacherAvatar";
 import { getDb } from "@/lib/cloudflare";
-import { getPublicProfileBySlug, toPreacherProfile } from "@/modules/accounts";
+import { getPublicProfileBySlug, getViewer, toPreacherProfile } from "@/modules/accounts";
 import { listPreacherRecordings } from "@/modules/library";
 import { RecordingCard } from "@/modules/library/components/RecordingCard";
+import { getFollowState } from "@/modules/social";
+import { FollowButton } from "@/modules/social/components/FollowButton";
 
 const loadProfile = cache(async (slug: string) => {
   const row = await getPublicProfileBySlug(getDb(), slug.toLowerCase());
@@ -30,7 +32,11 @@ export default async function PreacherPage({ params }: PageProps<"/p/[slug]">) {
   const profile = await loadProfile((await params).slug);
   if (!profile) notFound();
   const location = [profile.city, profile.state].filter(Boolean).join(", ");
-  const recordings = await listPreacherRecordings(getDb(), profile.userId);
+  const viewer = await getViewer();
+  const [recordings, followState] = await Promise.all([
+    listPreacherRecordings(getDb(), profile.userId),
+    getFollowState(getDb(), viewer, profile.slug),
+  ]);
   return (
     <article className="flex flex-col gap-6" data-testid="preacher-page">
       <header className="flex flex-col items-center gap-3 text-center">
@@ -51,6 +57,9 @@ export default async function PreacherPage({ params }: PageProps<"/p/[slug]">) {
           </p>
         </div>
       </header>
+      <div className="flex justify-center">
+        <FollowButton slug={profile.slug} preacherName={profile.displayName} initialState={followState} isSignedIn={Boolean(viewer)} />
+      </div>
       {profile.bio ? <p className="text-pretty whitespace-pre-line">{profile.bio}</p> : null}
       <section aria-labelledby="sermons-heading" className="flex flex-col gap-3">
         <h2 id="sermons-heading" className="text-lg font-semibold">
