@@ -22,6 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: { default: "OpenPulpit", template: "%s · OpenPulpit" },
     description: "Listen to preachers live and replay their sermons. Light on data, built for phones.",
     applicationName: "OpenPulpit",
+    appleWebApp: { capable: true, title: "OpenPulpit", statusBarStyle: "default" },
     openGraph: { siteName: "OpenPulpit", images: [DEFAULT_OG_IMAGE], locale: "en_NG", type: "website" },
   };
 }

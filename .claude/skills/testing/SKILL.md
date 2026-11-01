@@ -25,6 +25,7 @@ description: How to test OpenPulpit — what must be tested, which tool to use (
 | `modules/<m>/store/endpoints.ts` | `modules/<m>/__tests__/endpoints.test.ts` |
 | `modules/<m>/schemas/x.ts` | `modules/<m>/__tests__/x.schema.test.ts` |
 | `app/api/**/route.ts` | `modules/<m>/__tests__/<name>.route.test.ts` for the module it calls |
+| `app/manifest.ts` and other app-level files | `app/__tests__/x.test.ts` |
 | `components/ui/atoms/X.tsx`, `components/ui/molecules/X.tsx` | `components/ui/atoms/__tests__/X.test.tsx`, `components/ui/molecules/__tests__/X.test.tsx` |
 | `hooks/useX.ts` | `hooks/__tests__/useX.test.ts` |
 | `helpers/<domain>/x.ts` | `helpers/__tests__/x.test.ts` |
