@@ -27,7 +27,11 @@ export function ok<T>(data: T, init: ResponseInit = {}): Response {
 
 export function errorResponse(error: unknown): Response {
   if (error instanceof ApiError) {
-    return Response.json({ error: error.message }, { status: error.status, headers: NO_STORE });
+    const field = (error as ApiError & { field?: string }).field;
+    return Response.json(field ? { error: error.message, field } : { error: error.message }, {
+      status: error.status,
+      headers: NO_STORE,
+    });
   }
   if (error instanceof ZodError) {
     const first = error.issues[0];
