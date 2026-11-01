@@ -75,10 +75,14 @@ export async function notifyFollowersOfLive(
   const statements = gone.map((id) => db.prepare("DELETE FROM push_subscriptions WHERE id = ?").bind(id));
   statements.push(db.prepare("UPDATE notifications_sent SET recipient_count = ? WHERE broadcast_id = ?").bind(sent, broadcast.id));
   if (sent) {
+    // A subquery, not one parameter per subscription: D1 allows at most 100 bound parameters.
     statements.push(
       db
-        .prepare(`UPDATE push_subscriptions SET last_used_at = ? WHERE id IN (${subscriptions.map(() => "?").join(",")})`)
-        .bind(nowIso(), ...subscriptions.map((s) => s.id)),
+        .prepare(
+          `UPDATE push_subscriptions SET last_used_at = ?1 WHERE user_id IN (
+             SELECT f.listener_id FROM follows f WHERE f.preacher_id = ?2 AND f.notifications_enabled = 1)`,
+        )
+        .bind(nowIso(), broadcast.preacher_id),
     );
   }
   await db.batch(statements);

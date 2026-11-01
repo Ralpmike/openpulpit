@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { LoaderButton } from "@/components/ui/molecules/LoaderButton";
 import { SectionLoadingSkeleton } from "@/components/ui/molecules/SectionLoadingSkeleton";
 import { getErrorMessage } from "@/helpers/api/getErrorMessage";
+import { refreshSession } from "@/lib/authClient";
 import { PreacherApplicationForm } from "@/modules/accounts/components/PreacherApplicationForm";
 import type { PreacherApplicationFormValues } from "@/modules/accounts/schemas/auth";
 import {
@@ -27,6 +28,7 @@ export function BecomePreacherCard() {
   async function becomePreacher() {
     try {
       await chooseToPreach().unwrap();
+      await refreshSession();
       toast.success("You're set up as a preacher. Now add your profile.");
       router.push("/profile/edit");
       router.refresh();

@@ -49,7 +49,9 @@ async function emit(listeners: Listener[], env: CloudflareEnv, broadcastId: stri
 /** Live once the preacher's microphone track is published. Returns true only on the first move. */
 export async function markLive(env: CloudflareEnv, broadcastId: string, now: Date = new Date()): Promise<boolean> {
   const result = await env.DB.prepare(
-    "UPDATE broadcasts SET status = 'live', started_at = ?, publisher_left_at = NULL WHERE id = ? AND status = 'ready'",
+    `UPDATE broadcasts SET status = 'live', started_at = ?, publisher_left_at = NULL
+      WHERE id = ? AND status = 'ready'
+        AND preacher_id IN (SELECT id FROM "user" WHERE status IN ('active', 'warned'))`,
   )
     .bind(nowIso(now), broadcastId)
     .run();
@@ -161,6 +163,17 @@ export async function syncBroadcast(env: CloudflareEnv, broadcastId: string, now
   if (isPublishing && broadcast.status === "ready") await markLive(env, broadcastId, now);
   if (isPublishing && broadcast.publisher_left_at) await markPublisherBack(env.DB, broadcastId);
   if (!isPublishing && broadcast.status === "live") await markPublisherLeft(env.DB, broadcastId, now);
+
+  // Gone longer than the reconnect grace: the broadcast ends when they left, even if
+  // listeners are still in the room (their joins and leaves keep the room open).
+  const latest = (await getBroadcast(env.DB, broadcastId))!;
+  if (!isPublishing && latest.status === "live" && latest.publisher_left_at) {
+    const leftAt = new Date(latest.publisher_left_at);
+    if (now.getTime() - leftAt.getTime() > getLimits(env).reconnectGraceSeconds * 1000) {
+      await endBroadcast(env, broadcastId, "disconnected", { now: leftAt });
+      return { broadcast: (await getBroadcast(env.DB, broadcastId))!, remainingSeconds: 0, isHoursWarning: false };
+    }
+  }
   await setListenerCount(env.DB, broadcastId, participants.filter((p) => p.identity !== broadcast!.preacher_id).length, now);
 
   broadcast = (await getBroadcast(env.DB, broadcastId))!;

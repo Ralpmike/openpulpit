@@ -103,6 +103,16 @@ export async function ensureRecording(
 
 /** On end: stop the egress so the file is finalised (it also stops when the room closes). */
 export async function stopRecording(env: CloudflareEnv, broadcastId: string, deps: RecordingDeps = liveKitRecordingDeps(env)) {
+  // Egress never started (no track, bad R2 keys, LiveKit down): say so, never leave it "processing".
+  const neverStarted = await env.DB.prepare(
+    "UPDATE recordings SET status = 'failed' WHERE broadcast_id = ? AND status = 'processing' AND (egress_id IS NULL OR egress_id LIKE 'pending:%')",
+  )
+    .bind(broadcastId)
+    .run();
+  if (neverStarted.meta.changes) {
+    console.error("Recording never started", broadcastId);
+    return;
+  }
   const row = await env.DB.prepare("SELECT egress_id FROM recordings WHERE broadcast_id = ?").bind(broadcastId).first<{ egress_id: string | null }>();
   if (row?.egress_id && !row.egress_id.startsWith("pending:")) {
     await deps.stopEgress(row.egress_id).catch(() => undefined); // already finished
