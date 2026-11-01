@@ -10,6 +10,8 @@ import { DataUseNote } from "@/components/ui/molecules/DataUseNote";
 import { PreacherAvatar } from "@/components/ui/molecules/PreacherAvatar";
 import { dataUseLabel } from "@/helpers/audio/dataUse";
 import { getDb } from "@/lib/cloudflare";
+import { shareMetadata } from "@/lib/metadata";
+import { ShareButtons } from "@/components/ui/molecules/ShareButtons";
 import { getBroadcastWithPreacher } from "@/modules/broadcasting/server/queries";
 import { getPublicRecordingIdForBroadcast } from "@/modules/library";
 import { ListenButton } from "@/modules/player/ListenButton";
@@ -24,7 +26,7 @@ export async function generateMetadata({ params }: PageProps<"/live/[id]">): Pro
   if (!broadcast) return { title: "Broadcast not found" };
   const title = `${broadcast.status === "live" ? "Live: " : ""}${broadcast.title}`;
   const description = `${broadcast.preacher.name} on OpenPulpit${broadcast.biblePassage ? ` · ${broadcast.biblePassage}` : ""}`;
-  return { title, description, openGraph: { title, description, images: broadcast.preacher.photoUrl ? [broadcast.preacher.photoUrl] : [] } };
+  return shareMetadata({ title, description, path: `/live/${broadcast.id}`, image: broadcast.preacher.photoUrl });
 }
 
 export default async function LivePage({ params }: PageProps<"/live/[id]">) {
@@ -66,6 +68,7 @@ export default async function LivePage({ params }: PageProps<"/live/[id]">) {
             {broadcast.listenerCount} listening now
           </p>
           <DataUseNote label={`${dataUseLabel()} of data`} />
+          <ShareButtons path={`/live/${broadcast.id}`} text={`${broadcast.preacher.name} is live: ${broadcast.title}`} />
           <div className="mt-2 rounded-lg border p-3 text-left">
             <QualityToggle />
           </div>
