@@ -5,11 +5,10 @@ import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/atoms/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/atoms/empty";
-import { LiveBadge } from "@/components/ui/molecules/LiveBadge";
-import { PreacherCard } from "@/components/ui/molecules/PreacherCard";
 import { getDb } from "@/lib/cloudflare";
 import { getViewer } from "@/modules/accounts";
 import { listFollowing } from "@/modules/social";
+import { FollowingList } from "@/modules/social/components/FollowingList";
 import { NotificationSettings } from "@/modules/social/components/NotificationSettings";
 
 export const metadata: Metadata = { title: "Following" };
@@ -24,14 +23,7 @@ export default async function FollowingPage() {
       <h1 className="text-2xl font-semibold">Following</h1>
       {following.length ? <NotificationSettings /> : null}
       {following.length ? (
-        <ul className="flex flex-col">
-          {following.map((preacher) => (
-            <li key={preacher.slug} className="relative">
-              <PreacherCard {...preacher} />
-              {preacher.isLive ? <LiveBadge className="absolute top-2 right-2" /> : null}
-            </li>
-          ))}
-        </ul>
+        <FollowingList initial={following} />
       ) : (
         <Empty data-testid="following-empty-state">
           <EmptyHeader>
