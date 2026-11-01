@@ -48,3 +48,6 @@ export const verificationRequestSchema = z.object({
   message: z.string().trim().max(500, "Keep it under 500 characters.").default(""),
 });
 export type VerificationRequestFormValues = z.input<typeof verificationRequestSchema>;
+
+export const accountNameSchema = z.object({ name: displayNameSchema });
+export type AccountNameFormValues = z.infer<typeof accountNameSchema>;
