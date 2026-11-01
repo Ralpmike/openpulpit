@@ -25,7 +25,15 @@ export interface AuditRow {
 }
 
 
+export interface CostCheckView {
+  metric: "bandwidth" | "livekit_minutes" | "failed_recordings";
+  value: number;
+  threshold: number;
+  isOver: boolean;
+}
+
 export interface PlatformStats {
+  costs?: CostCheckView[];
   preachers: number;
   listeners: number;
   broadcasts: number;

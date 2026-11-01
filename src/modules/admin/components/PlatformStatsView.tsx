@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/atoms/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/atoms/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/atoms/table";
 import { SectionLoadingSkeleton } from "@/components/ui/molecules/SectionLoadingSkeleton";
@@ -40,6 +41,23 @@ export function PlatformStatsView() {
           </Card>
         ))}
       </dl>
+      {stats.costs ? (
+        <section aria-labelledby="costs-heading" className="flex flex-col gap-2" data-testid="cost-checks">
+          <h2 id="costs-heading" className="text-lg font-semibold">Today against alert limits</h2>
+          <ul className="flex flex-col gap-1 text-sm">
+            {stats.costs.map((check) => (
+              <li key={check.metric} className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2">
+                <span>{{ bandwidth: "Bandwidth (GB)", livekit_minutes: "LiveKit minutes", failed_recordings: "Failed recordings (24 h)" }[check.metric]}</span>
+                <span className="flex items-center gap-2 tabular-nums">
+                  {number.format(Math.round(check.value * 10) / 10)} / {number.format(check.threshold)}
+                  <Badge variant={check.isOver ? "destructive" : "good"}>{check.isOver ? "Over" : "OK"}</Badge>
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-muted-foreground">Alerts go to ALERT_EMAIL once a day per metric. Limits are set in wrangler.jsonc.</p>
+        </section>
+      ) : null}
       <section aria-labelledby="daily-heading" className="flex flex-col gap-2">
         <h2 id="daily-heading" className="text-lg font-semibold">Last 14 days (Lagos time)</h2>
         {stats.days.length ? (

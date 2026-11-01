@@ -11,12 +11,14 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "openpulpit-local",
-  "main": ".open-next/worker.js",
+  "main": "worker.ts",
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
   "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "openpulpit-local" }],
   "observability": { "enabled": true },
+  // Every 15 minutes: cost checks and the live-broadcast safety net (worker.ts -> /api/internal/cron).
+  "triggers": { "crons": ["*/15 * * * *"] },
   "d1_databases": [
     {
       "binding": "DB",
@@ -32,6 +34,9 @@
   "images": { "binding": "IMAGES" },
   "vars": {
     "APP_ENV": "local",
+    "COST_ALERT_DAILY_BANDWIDTH_GB": "20",
+    "COST_ALERT_DAILY_LIVEKIT_MINUTES": "20000",
+    "ALERT_EMAIL": "",
     "RECORDINGS_BUCKET_NAME": "openpulpit-recordings-local",
     "APP_URL": "http://localhost:3000",
     "LIVEKIT_URL": "ws://localhost:7880",
@@ -43,6 +48,7 @@
   "env": {
     "staging": {
       "name": "openpulpit-staging",
+      "triggers": { "crons": ["*/15 * * * *"] },
       "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "openpulpit-staging" }],
       "d1_databases": [
         {
@@ -59,6 +65,9 @@
       "images": { "binding": "IMAGES" },
       "vars": {
         "APP_ENV": "staging",
+        "COST_ALERT_DAILY_BANDWIDTH_GB": "20",
+        "COST_ALERT_DAILY_LIVEKIT_MINUTES": "20000",
+        "ALERT_EMAIL": "",
         "RECORDINGS_BUCKET_NAME": "openpulpit-recordings-staging",
         "APP_URL": "https://openpulpit-staging.workers.dev",
         "LIVEKIT_URL": "wss://REPLACE_WITH_STAGING_LIVEKIT_HOST",
@@ -70,6 +79,7 @@
     },
     "production": {
       "name": "openpulpit",
+      "triggers": { "crons": ["*/15 * * * *"] },
       "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "openpulpit" }],
       "d1_databases": [
         {
@@ -86,6 +96,9 @@
       "images": { "binding": "IMAGES" },
       "vars": {
         "APP_ENV": "production",
+        "COST_ALERT_DAILY_BANDWIDTH_GB": "20",
+        "COST_ALERT_DAILY_LIVEKIT_MINUTES": "20000",
+        "ALERT_EMAIL": "",
         "RECORDINGS_BUCKET_NAME": "openpulpit-recordings",
         "APP_URL": "https://openpulpit.workers.dev",
         "LIVEKIT_URL": "wss://REPLACE_WITH_PRODUCTION_LIVEKIT_HOST",
