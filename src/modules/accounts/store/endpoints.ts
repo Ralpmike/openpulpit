@@ -1,5 +1,6 @@
 import { api } from "@/store/api";
-import type { Me } from "@/modules/accounts/models";
+import type { Me, PreacherProfile } from "@/modules/accounts/models";
+import type { PreacherProfileFormValues } from "@/modules/accounts/schemas/profile";
 import type { PreacherApplicationFormValues } from "@/modules/accounts/schemas/auth";
 
 export interface RoleOptions {
@@ -12,6 +13,22 @@ export const accountsApi = api.injectEndpoints({
     getMe: build.query<Me | null, void>({
       query: () => "/me",
       providesTags: ["Me"],
+    }),
+    getMyProfile: build.query<PreacherProfile | null, void>({
+      query: () => "/profile",
+      providesTags: [{ type: "Preacher", id: "ME" }],
+    }),
+    saveMyProfile: build.mutation<PreacherProfile, PreacherProfileFormValues>({
+      query: (body) => ({ url: "/profile", method: "PUT", body }),
+      invalidatesTags: [{ type: "Preacher", id: "ME" }, "Preacher", "Me"],
+    }),
+    uploadMyPhoto: build.mutation<{ photoUrl: string }, Blob>({
+      query: (photo) => {
+        const body = new FormData();
+        body.append("photo", photo, "photo.webp");
+        return { url: "/profile/photo", method: "POST", body };
+      },
+      invalidatesTags: [{ type: "Preacher", id: "ME" }, "Preacher"],
     }),
     getRoleOptions: build.query<RoleOptions, void>({
       query: () => "/account/role-options",
@@ -28,4 +45,8 @@ export const accountsApi = api.injectEndpoints({
   }),
 });
 
-export const { useGetMeQuery, useGetRoleOptionsQuery, useChooseToPreachMutation, useApplyToPreachMutation } = accountsApi;
+export const {
+  useGetMyProfileQuery,
+  useSaveMyProfileMutation,
+  useUploadMyPhotoMutation,
+  useGetMeQuery, useGetRoleOptionsQuery, useChooseToPreachMutation, useApplyToPreachMutation } = accountsApi;
