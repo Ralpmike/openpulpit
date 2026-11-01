@@ -11,7 +11,7 @@ The schema lives in `migrations/NNNN_short_name.sql` (`0001_init.sql`, `0002_add
 
 - **Never edit a migration that has been applied** anywhere (local or remote). Write a new one.
 - **Every table belongs to one module** (accounts, broadcasting, library, social, moderation, admin), noted in a comment at the top of the `CREATE TABLE`. Only that module's `server/repo.ts` reads or writes it (see `cloudflare-nextjs`).
-- **Better Auth owns its tables** (`user`, `session`, `account`, `verification`). Generate their migration with the Better Auth CLI, review it, and commit it as a numbered file. Our own profile data goes in our tables (`preacher_profiles`, `listener_profiles`) keyed by the auth user id, not in extra Better Auth columns, except `role` and `status`, which Better Auth's session needs.
+- **Better Auth owns its tables** (`user`, `session`, `account`, `verification`, camelCase columns). The fields that shape them live in `src/modules/accounts/server/authSchema.ts`; after changing it, run `npm run db:auth-schema` to print the SQL Better Auth expects, and write the difference as a new numbered migration (see `0001_auth.sql`). Our own profile data goes in our tables (`preacher_profiles`, `listener_profiles`) keyed by the auth user id, not in extra Better Auth columns, except `role` and `status`, which Better Auth's session needs.
 - **Enums are `TEXT` with a `CHECK (col IN (...))`** constraint, matching the TypeScript union in the module's `models.ts` and the policy code. Adding a value means a new migration that rebuilds the table (SQLite can't alter a CHECK), so think before adding enums. Current ones: `role` (`listener`, `preacher`, `admin`), user `status` (`active`, `warned`, `suspended`, `banned`), broadcast `status` (`ready`, `live`, `ended`), `ended_reason`, recording `status` (`processing`, `ready`, `failed`, `deleted`) and `visibility` (see `broadcasting-rules`).
 - **Text columns default to `''` and are `NOT NULL`** unless "unknown" genuinely differs from empty (an optional Bible passage is `''`). Timestamps are ISO-8601 UTC strings (`strftime('%Y-%m-%dT%H:%M:%fZ','now')`); convert to Lagos time only for display and for the monthly hours cap.
 - **Durations are whole seconds** (`duration_seconds`), sizes whole bytes, bitrates whole kbps. No floats for anything summed.
@@ -31,8 +31,9 @@ The schema lives in `migrations/NNNN_short_name.sql` (`0001_init.sql`, `0002_add
 1. The migration file.
 2. The owning module's `server/repo.ts` row types and queries.
 3. The module's `models.ts` (types the client sees).
-4. `scripts/seed.sql` (or `seed.mjs`) if seeded data is affected: Nigerian names, cities and ministries.
-5. RTK Query endpoints and tags if the API shape changed.
+4. `scripts/seed.sql` if seeded data is affected: Nigerian names, cities and ministries.
+5. Schema tests in `src/test/__tests__/schema.test.ts` for new constraints; `createTestD1()` (`src/test/d1.ts`) runs every migration on `node:sqlite`, so module tests use the real schema.
+6. RTK Query endpoints and tags if the API shape changed.
 
 ## Apply
 
