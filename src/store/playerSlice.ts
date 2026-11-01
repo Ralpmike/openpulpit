@@ -17,12 +17,15 @@ export interface PlayerState {
   nowPlaying: NowPlaying | null;
   isPlaying: boolean;
   speed: PlaybackSpeed;
+  /** "Higher quality on Wi-Fi" (requirement 13). Off by default; remembered on this device. */
+  prefersHighQuality: boolean;
 }
 
 const initialState: PlayerState = {
   nowPlaying: null,
   isPlaying: false,
   speed: 1,
+  prefersHighQuality: false,
 };
 
 export const playerSlice = createSlice({
@@ -47,10 +50,13 @@ export const playerSlice = createSlice({
       state.nowPlaying = null;
       state.isPlaying = false;
     },
+    setPrefersHighQuality(state, action: PayloadAction<boolean>) {
+      state.prefersHighQuality = action.payload;
+    },
     setSpeed(state, action: PayloadAction<PlaybackSpeed>) {
       if (state.nowPlaying?.kind !== "live") state.speed = action.payload;
     },
   },
 });
 
-export const { play, pause, resume, stop, setSpeed } = playerSlice.actions;
+export const { play, pause, resume, stop, setSpeed, setPrefersHighQuality } = playerSlice.actions;

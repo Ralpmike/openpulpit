@@ -11,6 +11,7 @@ import { getDb } from "@/lib/cloudflare";
 import { getBroadcastWithPreacher } from "@/modules/broadcasting/server/queries";
 import { getPublicRecordingIdForBroadcast } from "@/modules/library";
 import { ListenButton } from "@/modules/player/ListenButton";
+import { QualityToggle } from "@/modules/player/QualityToggle";
 
 export const dynamic = "force-dynamic";
 
@@ -62,6 +63,9 @@ export default async function LivePage({ params }: PageProps<"/live/[id]">) {
             <HeadphonesIcon aria-hidden className="size-4" />
             {broadcast.listenerCount} listening now
           </p>
+          <div className="mt-2 rounded-lg border p-3 text-left">
+            <QualityToggle />
+          </div>
         </div>
       ) : broadcast.status === "ended" ? (
         <div className="flex flex-col items-center gap-3" data-testid="broadcast-ended">

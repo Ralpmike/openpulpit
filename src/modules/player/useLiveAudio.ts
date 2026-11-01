@@ -4,6 +4,7 @@ import type { Room } from "livekit-client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { getErrorMessage } from "@/helpers/api/getErrorMessage";
+import { chooseListenerTrack, isOnWifi } from "@/modules/broadcasting/audio";
 import { FINAL_DISCONNECT_REASONS, rejoinDelay } from "@/modules/broadcasting/reconnect";
 import { useGetListenTokenMutation } from "@/modules/broadcasting/store/endpoints";
 
@@ -23,7 +24,12 @@ const MAX_LISTENER_RETRIES = 8;
  * demand), the preacher's audio into a hidden <audio> element. Rejoins after a
  * drop while the broadcast is still live.
  */
-export function useLiveAudio(broadcastId: string | null, isPlaying: boolean, audioRef: React.RefObject<HTMLAudioElement | null>): UseLiveAudioReturn {
+export function useLiveAudio(
+  broadcastId: string | null,
+  isPlaying: boolean,
+  audioRef: React.RefObject<HTMLAudioElement | null>,
+  prefersHighQuality = false,
+): UseLiveAudioReturn {
   const roomRef = useRef<Room | null>(null);
   const [state, setState] = useState<LiveAudioState>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -45,14 +51,28 @@ export function useLiveAudio(broadcastId: string | null, isPlaying: boolean, aud
     const join = async (attempt: number): Promise<void> => {
       setState(attempt ? "reconnecting" : "connecting");
       try {
-        const [grant, { Room, RoomEvent, Track }] = await Promise.all([
+        const [grant, { Room, RoomEvent, Track, RemoteTrackPublication }] = await Promise.all([
           getListenToken(broadcastId).unwrap(),
           import("livekit-client"),
         ]);
         if (isCancelled) return;
         const room = new Room({ adaptiveStream: true, dynacast: false });
         roomRef.current = room;
+        // Subscribe to exactly one of the preacher's audio tracks (32 kbps by default).
+        const pickTrack = () => {
+          const publications = [...room.remoteParticipants.values()].flatMap((participant) =>
+            [...participant.audioTrackPublications.values()].filter((pub) => pub instanceof RemoteTrackPublication),
+          );
+          const chosen = chooseListenerTrack({
+            prefersHighQuality,
+            isOnWifi: isOnWifi(),
+            availableTracks: publications.map((pub) => pub.trackName),
+          });
+          for (const publication of publications) publication.setSubscribed(publication.trackName === chosen);
+        };
         room
+          .on(RoomEvent.TrackPublished, pickTrack)
+          .on(RoomEvent.TrackUnpublished, pickTrack)
           .on(RoomEvent.TrackSubscribed, (track) => {
             if (track.kind === Track.Kind.Audio && audioRef.current) track.attach(audioRef.current);
           })
@@ -73,8 +93,9 @@ export function useLiveAudio(broadcastId: string | null, isPlaying: boolean, aud
             setState("reconnecting");
             retryTimer = setTimeout(() => void join(attempt + 1), rejoinDelay(attempt));
           });
-        await room.connect(grant.url, grant.token);
+        await room.connect(grant.url, grant.token, { autoSubscribe: false });
         if (isCancelled) return;
+        pickTrack();
         setState(room.canPlaybackAudio ? "playing" : "blocked");
       } catch (error) {
         if (isCancelled) return;
@@ -102,7 +123,7 @@ export function useLiveAudio(broadcastId: string | null, isPlaying: boolean, aud
       void roomRef.current?.disconnect();
       roomRef.current = null;
     };
-  }, [broadcastId, isPlaying, getListenToken, audioRef]);
+  }, [broadcastId, isPlaying, getListenToken, audioRef, prefersHighQuality]);
 
   return { state: broadcastId && isPlaying ? state : "idle", errorMessage, unblock };
 }
