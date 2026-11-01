@@ -26,6 +26,7 @@ import { BiblePassage, BroadcastDetailsForm } from "@/modules/broadcasting/compo
 import { HoursRemaining } from "@/modules/broadcasting/components/HoursRemaining";
 import { LiveView } from "@/modules/broadcasting/components/LiveView";
 import { MicCheck } from "@/modules/broadcasting/components/MicCheck";
+import { RecordingLimitNotice } from "@/modules/library/components/RecordingLimitNotice";
 import { useLiveBroadcast } from "@/modules/broadcasting/hooks/useLiveBroadcast";
 import { useMicCheck } from "@/modules/broadcasting/hooks/useMicCheck";
 import type { Broadcast } from "@/modules/broadcasting/models";
@@ -139,6 +140,8 @@ export function GoLivePage() {
       {step === "details" || step === "check" ? (
         <HoursRemaining hours={hours} isLoading={isHoursLoading} isError={isHoursError} />
       ) : null}
+
+      {step === "details" ? <RecordingLimitNotice /> : null}
 
       {step === "details" && !hasNoHoursLeft ? (
         <BroadcastDetailsForm onSubmit={saveDetails} isSubmitting={isCreateBroadcastPending} />

@@ -3,7 +3,8 @@ import "server-only";
 import { waitUntil } from "@/lib/cloudflare";
 import { onBroadcastEnded, onBroadcastLive, onBroadcastPublishing } from "@/modules/broadcasting/server/lifecycle";
 import { onEgressEvent } from "@/modules/broadcasting/server/webhooks";
-import { ensureRecording, handleEgressEnded, stopRecording } from "@/modules/library/server/recording";
+import { ensureRecording, handleEgressEnded, onRecordingReady, stopRecording } from "@/modules/library/server/recording";
+import { enforceRecordingLimit } from "@/modules/library/server/retention";
 import { notifyFollowersOfLive } from "@/modules/social/server/notifications";
 
 /**
@@ -23,6 +24,9 @@ export function registerBroadcastingHooks() {
   onEgressEvent(async (env, event) => {
     if (event.event === "egress_ended" && event.egressInfo) await handleEgressEnded(env, event.egressInfo);
   });
+
+  // Free tier keeps the 20 newest recordings per preacher.
+  onRecordingReady(async (env, recording) => void (await enforceRecordingLimit(env, recording.preacher_id)));
 
   // Followers hear about it once, without making going live wait on push delivery.
   onBroadcastLive(async (env, broadcast) => {
