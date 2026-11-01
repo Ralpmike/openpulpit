@@ -1,0 +1,16 @@
+# Copy to .dev.vars for local development (never commit .dev.vars).
+# In staging and production, set each with: npx wrangler secret put NAME --env <staging|production>
+BETTER_AUTH_SECRET=change-me-to-a-long-random-string
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+LIVEKIT_API_KEY=devkey
+LIVEKIT_API_SECRET=secret
+R2_ACCOUNT_ID=
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+VAPID_PRIVATE_KEY=
+VAPID_SUBJECT=mailto:hello@openpulpit.app
+EMAIL_API_KEY=
+EMAIL_FROM=OpenPulpit <no-reply@openpulpit.app>
+RATE_LIMIT_SALT=change-me
+CRON_SECRET=change-me-to-a-long-random-string

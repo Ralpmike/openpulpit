@@ -10,3 +10,10 @@ playwright-report/
 test-results/
 *.tsbuildinfo
 .DS_Store
+/out/
+/build
+*.pem
+npm-debug.log*
+next-env.d.ts
+.vercel
+/.open-next/

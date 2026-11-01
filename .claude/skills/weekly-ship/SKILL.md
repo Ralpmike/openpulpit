@@ -17,13 +17,13 @@ Run through this list and report each item as done, failed, or skipped (with a r
 ## Database
 
 - [ ] New migrations run cleanly on a fresh local database, and the seed still works.
-- [ ] `npm run db:migrate:remote` applied **before** `npm run deploy`. Deploying first breaks every route that reads a new column.
+- [ ] Migrations applied remotely **before** the code that needs them. The Deploy workflow does this (`dev` → staging, `main` → production); by hand it is `npm run db:migrate:staging` / `db:migrate:production` before `npm run deploy:staging` / `deploy:production`. Deploying first breaks every route that reads a new column.
 - [ ] Each module's `models.ts` and `server/repo.ts` match the new schema.
 
 ## Configuration
 
 - [ ] New secrets set with `npx wrangler secret put <NAME>` (never committed, never in `wrangler.jsonc` vars) and listed in `.dev.vars.example`.
-- [ ] `npm run preview` (OpenNext build, real Worker locally) works before `npm run deploy`.
+- [ ] `npm run preview` (OpenNext build, real Worker locally) works, and staging (deployed from `dev`) has been checked before the release pull request from `dev` to `main`.
 - [ ] LiveKit: the production webhook points at `/api/webhooks/livekit` and its signature check passes; egress can write to the R2 bucket.
 - [ ] Google sign-in redirect URIs and the email sender domain still work on the production URL.
 - [ ] VAPID keys unchanged (changing them silently breaks every existing push subscription).

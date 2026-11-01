@@ -1,0 +1,176 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-live: var(--live);
+  --color-live-foreground: var(--live-foreground);
+  --color-status-good: var(--status-good);
+  --color-status-warning: var(--status-warning);
+  --color-status-danger: var(--status-danger);
+  /* Heights the page pads for so content never hides behind fixed chrome. */
+  --spacing-nav: 4rem;
+  --spacing-player: 4.5rem;
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  /* OpenPulpit: warm off-white, deep blue accent, red only for "live". See DESIGN.md. */
+  --background: oklch(0.99 0.004 85);
+  --foreground: oklch(0.21 0.02 265);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.02 265);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.21 0.02 265);
+  --primary: oklch(0.42 0.13 262);
+  --primary-foreground: oklch(0.99 0.004 85);
+  --secondary: oklch(0.955 0.012 262);
+  --secondary-foreground: oklch(0.3 0.08 262);
+  --muted: oklch(0.955 0.008 85);
+  --muted-foreground: oklch(0.47 0.02 265);
+  --accent: oklch(0.955 0.012 262);
+  --accent-foreground: oklch(0.3 0.08 262);
+  --destructive: oklch(0.54 0.2 27);
+  --border: oklch(0.9 0.008 85);
+  --input: oklch(0.88 0.01 85);
+  --ring: oklch(0.42 0.13 262);
+  --live: oklch(0.54 0.2 27);
+  --live-foreground: oklch(0.99 0 0);
+  --status-good: oklch(0.48 0.12 150);
+  --status-warning: oklch(0.52 0.12 65);
+  --status-danger: oklch(0.54 0.2 27);
+  --chart-1: oklch(0.42 0.13 262);
+  --chart-2: oklch(0.6 0.1 200);
+  --chart-3: oklch(0.65 0.13 65);
+  --chart-4: oklch(0.55 0.12 150);
+  --chart-5: oklch(0.54 0.2 27);
+  --radius: 0.75rem;
+  --sidebar: oklch(0.98 0.004 85);
+  --sidebar-foreground: oklch(0.21 0.02 265);
+  --sidebar-primary: oklch(0.42 0.13 262);
+  --sidebar-primary-foreground: oklch(0.99 0.004 85);
+  --sidebar-accent: oklch(0.955 0.012 262);
+  --sidebar-accent-foreground: oklch(0.3 0.08 262);
+  --sidebar-border: oklch(0.9 0.008 85);
+  --sidebar-ring: oklch(0.42 0.13 262);
+}
+
+.dark {
+  --background: oklch(0.17 0.015 265);
+  --foreground: oklch(0.96 0.005 85);
+  --card: oklch(0.21 0.015 265);
+  --card-foreground: oklch(0.96 0.005 85);
+  --popover: oklch(0.21 0.015 265);
+  --popover-foreground: oklch(0.96 0.005 85);
+  --primary: oklch(0.75 0.11 262);
+  --primary-foreground: oklch(0.18 0.03 265);
+  --secondary: oklch(0.26 0.03 262);
+  --secondary-foreground: oklch(0.92 0.02 262);
+  --muted: oklch(0.24 0.015 265);
+  --muted-foreground: oklch(0.72 0.015 265);
+  --accent: oklch(0.26 0.03 262);
+  --accent-foreground: oklch(0.92 0.02 262);
+  --destructive: oklch(0.68 0.19 25);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.75 0.11 262);
+  --live: oklch(0.54 0.2 27);
+  --live-foreground: oklch(0.99 0 0);
+  --status-good: oklch(0.75 0.13 150);
+  --status-warning: oklch(0.8 0.13 75);
+  --status-danger: oklch(0.68 0.19 25);
+  --chart-1: oklch(0.75 0.11 262);
+  --chart-2: oklch(0.72 0.1 200);
+  --chart-3: oklch(0.8 0.13 75);
+  --chart-4: oklch(0.75 0.13 150);
+  --chart-5: oklch(0.68 0.19 25);
+  --sidebar: oklch(0.21 0.015 265);
+  --sidebar-foreground: oklch(0.96 0.005 85);
+  --sidebar-primary: oklch(0.75 0.11 262);
+  --sidebar-primary-foreground: oklch(0.18 0.03 265);
+  --sidebar-accent: oklch(0.26 0.03 262);
+  --sidebar-accent-foreground: oklch(0.92 0.02 262);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.75 0.11 262);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+    -webkit-tap-highlight-color: transparent;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply text-balance;
+  }
+}
+
+/* Fixed chrome layers: header < player bar < bottom nav. Dialogs stack themselves. */
+@utility z-header {
+  z-index: 30;
+}
+@utility z-player {
+  z-index: 40;
+}
+@utility z-nav {
+  z-index: 50;
+}
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+/* Room under page content for the player bar and bottom nav. */
+@utility pb-chrome {
+  padding-bottom: calc(var(--spacing-nav) + var(--spacing-player) + env(safe-area-inset-bottom) + 1rem);
+}
+/* Sits the player bar right above the bottom nav. */
+@utility bottom-above-nav {
+  bottom: calc(var(--spacing-nav) + env(safe-area-inset-bottom));
+}
