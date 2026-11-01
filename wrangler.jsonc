@@ -32,6 +32,7 @@
   "images": { "binding": "IMAGES" },
   "vars": {
     "APP_ENV": "local",
+    "RECORDINGS_BUCKET_NAME": "openpulpit-recordings-local",
     "APP_URL": "http://localhost:3000",
     "LIVEKIT_URL": "ws://localhost:7880",
     "FREE_MONTHLY_BROADCAST_MINUTES": "600",
@@ -58,6 +59,7 @@
       "images": { "binding": "IMAGES" },
       "vars": {
         "APP_ENV": "staging",
+        "RECORDINGS_BUCKET_NAME": "openpulpit-recordings-staging",
         "APP_URL": "https://openpulpit-staging.workers.dev",
         "LIVEKIT_URL": "wss://REPLACE_WITH_STAGING_LIVEKIT_HOST",
         "FREE_MONTHLY_BROADCAST_MINUTES": "600",
@@ -84,6 +86,7 @@
       "images": { "binding": "IMAGES" },
       "vars": {
         "APP_ENV": "production",
+        "RECORDINGS_BUCKET_NAME": "openpulpit-recordings",
         "APP_URL": "https://openpulpit.workers.dev",
         "LIVEKIT_URL": "wss://REPLACE_WITH_PRODUCTION_LIVEKIT_HOST",
         "FREE_MONTHLY_BROADCAST_MINUTES": "600",
