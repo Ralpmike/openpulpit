@@ -15,7 +15,7 @@ export const GET = route(async (_request: Request, { params }: Context) => {
 });
 
 export const PUT = route(async (_request: Request, { params }: Context) => {
-  const viewer = await requireSession();
+  const viewer = await requireSession({ fresh: true });
   requireAcceptedTerms(viewer);
   return ok(await follow(getDb(), viewer, (await params).slug));
 });

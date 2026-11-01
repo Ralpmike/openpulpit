@@ -66,6 +66,8 @@ function createAuth(env: CloudflareEnv) {
         "/sign-in/*": { window: 60, max: 10 },
         "/sign-up/*": { window: 60 * 10, max: 5 },
         "/email-otp/send-verification-otp": { window: 60 * 10, max: 5 },
+        "/email-otp/request-password-reset": { window: 60 * 10, max: 3 },
+        "/forget-password/email-otp": { window: 60 * 10, max: 3 },
         "/email-otp/*": { window: 60, max: 10 },
       },
       customStorage: {
@@ -81,16 +83,21 @@ function createAuth(env: CloudflareEnv) {
         create: {
           async before(user) {
             // Every account starts as an active listener. Preachers are set by our own routes.
-            return { data: { ...user, role: "listener", status: "active", termsVersion: "" } };
+            // A photo can only come from Google (https); our own uploads go through /api/account/photo.
+            const image = typeof user.image === "string" && user.image.startsWith("https://") ? user.image : null;
+            return { data: { ...user, image, role: "listener", status: "active", termsVersion: "" } };
           },
         },
         update: {
-          async before(data) {
-            // Role and status change only through our own routes, never through Better Auth's update-user.
-            const rest = { ...(data as Record<string, unknown>) };
-            delete rest.role;
-            delete rest.status;
-            return { data: rest };
+          async before(data, context) {
+            // Better Auth merges a hook's data into the update, so fields can't be stripped here:
+            // refuse the whole update instead. Through its own update-user endpoint, people may
+            // change only their name; role, status, terms and photos go through our own routes
+            // (a client-set image must never be trusted as a storage key).
+            const protectedFields = ["image", "role", "status", "termsVersion"];
+            const isClientUpdate = (context as { path?: string } | null)?.path === "/update-user";
+            if (isClientUpdate && protectedFields.some((field) => (data as Record<string, unknown>)[field] !== undefined)) return false;
+            return { data };
           },
         },
       },

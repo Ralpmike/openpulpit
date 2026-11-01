@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/atoms/alert-dialog";
 import { LoaderButton } from "@/components/ui/molecules/LoaderButton";
 import { getErrorMessage } from "@/helpers/api/getErrorMessage";
+import { refreshSession } from "@/lib/authClient";
 import { useAcceptTermsMutation, useGetMeQuery } from "@/modules/accounts/store/endpoints";
 import { CURRENT_TERMS_VERSION } from "@/modules/accounts/terms";
 
@@ -41,7 +42,12 @@ export function TermsGate() {
         <AlertDialogFooter>
           <LoaderButton
             isLoading={isAcceptTermsPending}
-            onClick={() => acceptTerms(CURRENT_TERMS_VERSION).unwrap().catch((error) => toast.error(getErrorMessage(error)))}
+            onClick={() =>
+              acceptTerms(CURRENT_TERMS_VERSION)
+                .unwrap()
+                .then(refreshSession)
+                .catch((error) => toast.error(getErrorMessage(error)))
+            }
             data-testid="accept-terms-button"
           >
             I agree

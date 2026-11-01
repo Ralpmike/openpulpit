@@ -6,7 +6,7 @@ import { useState } from "react";
 
 import { Alert, AlertDescription } from "@/components/ui/atoms/alert";
 import { FieldSeparator } from "@/components/ui/atoms/field";
-import { authClient, authErrorMessage } from "@/lib/authClient";
+import { authClient, authErrorMessage, refreshSession } from "@/lib/authClient";
 import { GoogleSignInButton } from "@/modules/accounts/components/GoogleSignInButton";
 import { SignUpForm } from "@/modules/accounts/components/SignUpForm";
 import { useAcceptTermsMutation, useChooseToPreachMutation } from "@/modules/accounts/store/endpoints";
@@ -42,6 +42,7 @@ export function SignUpPage({ isGoogleEnabled }: SignUpPageProps) {
         return finishSignIn("/account");
       }
     }
+    await refreshSession();
     // New preachers set up their public profile next (requirement 3).
     finishSignIn(role === "preacher" ? "/profile/edit" : "/");
   }

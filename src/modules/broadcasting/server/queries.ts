@@ -12,7 +12,8 @@ export async function getBroadcastWithPreacher(db: D1Database, id: string): Prom
          FROM broadcasts b
          JOIN preacher_profiles p ON p.user_id = b.preacher_id
          JOIN "user" u ON u.id = b.preacher_id
-        WHERE b.id = ? AND u.status IN ('active', 'warned')`,
+        WHERE b.id = ? AND u.status IN ('active', 'warned')
+          AND b.status <> 'ready' AND b.ended_reason <> 'admin'`,
     )
     .bind(id)
     .first<{
