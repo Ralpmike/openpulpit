@@ -76,6 +76,28 @@ export async function setListenerCount(db: D1Database, broadcastId: string, coun
     .run();
 }
 
+/** The UPDATE that ends a broadcast once (compare-and-set). Batch it with an audit row for admin ends. */
+export function endBroadcastStatement(db: D1Database, broadcastId: string, reason: EndedReason, now: Date = new Date()) {
+  const at = nowIso(now);
+  return db
+    .prepare(
+      `UPDATE broadcasts SET status = 'ended', ended_reason = ?, ended_at = ?, current_listeners = 0,
+              started_at = COALESCE(started_at, ?)
+        WHERE id = ? AND status IN ('ready', 'live')`,
+    )
+    .bind(reason, at, at, broadcastId);
+}
+
+/** After an end: delete the room (drops everyone at once) and tell other modules (recording, stats). */
+export async function afterBroadcastEnded(env: CloudflareEnv, broadcastId: string, { deleteRoom = true } = {}) {
+  if (deleteRoom) {
+    await roomService(liveKitConfig(env))
+      .deleteRoom(broadcastId)
+      .catch(() => undefined); // already gone
+  }
+  await emit(onEndedListeners, env, broadcastId);
+}
+
 /** Ends a broadcast once, whoever asks first. Deleting the room drops everyone at once. */
 export async function endBroadcast(
   env: CloudflareEnv,
@@ -83,21 +105,9 @@ export async function endBroadcast(
   reason: EndedReason,
   { deleteRoom = true, now = new Date() }: { deleteRoom?: boolean; now?: Date } = {},
 ): Promise<boolean> {
-  const at = nowIso(now);
-  const result = await env.DB.prepare(
-    `UPDATE broadcasts SET status = 'ended', ended_reason = ?, ended_at = ?, current_listeners = 0,
-            started_at = COALESCE(started_at, ?)
-      WHERE id = ? AND status IN ('ready', 'live')`,
-  )
-    .bind(reason, at, at, broadcastId)
-    .run();
+  const result = await endBroadcastStatement(env.DB, broadcastId, reason, now).run();
   if (!result.meta.changes) return false;
-  if (deleteRoom) {
-    await roomService(liveKitConfig(env))
-      .deleteRoom(broadcastId)
-      .catch(() => undefined); // already gone
-  }
-  await emit(onEndedListeners, env, broadcastId);
+  await afterBroadcastEnded(env, broadcastId, { deleteRoom });
   return true;
 }
 
