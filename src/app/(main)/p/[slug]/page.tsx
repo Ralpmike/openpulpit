@@ -8,6 +8,7 @@ import { PreacherAvatar } from "@/components/ui/molecules/PreacherAvatar";
 import { getDb } from "@/lib/cloudflare";
 import { shareMetadata } from "@/lib/metadata";
 import { ShareButtons } from "@/components/ui/molecules/ShareButtons";
+import { ReportButton } from "@/modules/moderation/components/ReportButton";
 import { getPublicProfileBySlug, getViewer, toPreacherProfile } from "@/modules/accounts";
 import { listPreacherRecordings } from "@/modules/library";
 import { RecordingCard } from "@/modules/library/components/RecordingCard";
@@ -60,6 +61,9 @@ export default async function PreacherPage({ params }: PageProps<"/p/[slug]">) {
       </div>
       <ShareButtons path={`/p/${profile.slug}`} text={`Listen to ${profile.displayName} on OpenPulpit`} />
       {profile.bio ? <p className="text-pretty whitespace-pre-line">{profile.bio}</p> : null}
+      <div className="flex justify-center">
+        <ReportButton targetType="profile" targetId={profile.slug} isSignedIn={Boolean(await getViewer())} returnPath={`/p/${profile.slug}`} />
+      </div>
       <section aria-labelledby="sermons-heading" className="flex flex-col gap-3">
         <h2 id="sermons-heading" className="text-lg font-semibold">
           Sermons

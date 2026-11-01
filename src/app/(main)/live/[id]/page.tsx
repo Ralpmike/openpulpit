@@ -10,8 +10,10 @@ import { DataUseNote } from "@/components/ui/molecules/DataUseNote";
 import { PreacherAvatar } from "@/components/ui/molecules/PreacherAvatar";
 import { dataUseLabel } from "@/helpers/audio/dataUse";
 import { getDb } from "@/lib/cloudflare";
+import { getViewer } from "@/modules/accounts";
 import { shareMetadata } from "@/lib/metadata";
 import { ShareButtons } from "@/components/ui/molecules/ShareButtons";
+import { ReportButton } from "@/modules/moderation/components/ReportButton";
 import { getBroadcastWithPreacher } from "@/modules/broadcasting/server/queries";
 import { getPublicRecordingIdForBroadcast } from "@/modules/library";
 import { ListenButton } from "@/modules/player/ListenButton";
@@ -48,6 +50,9 @@ export default async function LivePage({ params }: PageProps<"/live/[id]">) {
             {broadcast.biblePassage}
           </p>
         ) : null}
+      </div>
+      <div className="flex justify-center">
+        <ReportButton targetType="broadcast" targetId={broadcast.id} isSignedIn={Boolean(await getViewer())} returnPath={`/live/${broadcast.id}`} />
       </div>
       {broadcast.description ? <p className="text-pretty whitespace-pre-line">{broadcast.description}</p> : null}
 
