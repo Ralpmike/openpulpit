@@ -1,6 +1,6 @@
 import { ok, parseJson, route } from "@/lib/api";
 import { getDb } from "@/lib/cloudflare";
-import { getViewer, requireSession } from "@/modules/accounts";
+import { getViewer, requireAcceptedTerms, requireSession } from "@/modules/accounts";
 import { followNotificationsSchema } from "@/modules/social/schemas/push";
 import { follow, getFollowState, setNotifications, unfollow } from "@/modules/social/server/follows";
 
@@ -16,6 +16,7 @@ export const GET = route(async (_request: Request, { params }: Context) => {
 
 export const PUT = route(async (_request: Request, { params }: Context) => {
   const viewer = await requireSession();
+  requireAcceptedTerms(viewer);
   return ok(await follow(getDb(), viewer, (await params).slug));
 });
 

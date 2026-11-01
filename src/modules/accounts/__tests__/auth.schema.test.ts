@@ -5,12 +5,12 @@ import { emailCodeVerifySchema, signUpSchema } from "@/modules/accounts/schemas/
 
 describe("auth schemas", () => {
   it("accepts a valid sign-up and normalises the email", () => {
-    const parsed = signUpSchema.parse({ name: "Ada Obi", email: " Ada@Example.NG ", password: "longenough", role: "listener" });
+    const parsed = signUpSchema.parse({ name: "Ada Obi", email: " Ada@Example.NG ", password: "longenough", role: "listener", acceptsTerms: true });
     expect(parsed.email).toBe("ada@example.ng");
   });
 
   it("rejects short passwords, bad emails and empty names", () => {
-    expect(signUpSchema.safeParse({ name: "A", email: "ada@example.ng", password: "longenough", role: "listener" }).success).toBe(false);
+    expect(signUpSchema.safeParse({ name: "A", email: "ada@example.ng", password: "longenough", role: "listener", acceptsTerms: true }).success).toBe(false);
     expect(signUpSchema.safeParse({ name: "Ada", email: "not-an-email", password: "longenough" }).success).toBe(false);
     expect(signUpSchema.safeParse({ name: "Ada", email: "ada@example.ng", password: "short" }).success).toBe(false);
   });
@@ -33,6 +33,12 @@ describe("safeNextPath", () => {
 
 describe("role choice", () => {
   it("never accepts admin at sign-up", () => {
-    expect(signUpSchema.safeParse({ name: "Ada", email: "ada@example.ng", password: "longenough", role: "admin" }).success).toBe(false);
+    expect(signUpSchema.safeParse({ name: "Ada", email: "ada@example.ng", password: "longenough", role: "admin", acceptsTerms: true }).success).toBe(false);
+  });
+});
+
+describe("terms at sign-up", () => {
+  it("can't sign up without accepting the terms", () => {
+    expect(signUpSchema.safeParse({ name: "Ada", email: "ada@example.ng", password: "longenough", role: "listener", acceptsTerms: false }).success).toBe(false);
   });
 });

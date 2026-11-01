@@ -70,6 +70,10 @@ export const accountsApi = api.injectEndpoints({
       providesTags: ["Preacher"],
       keepUnusedDataFor: 300,
     }),
+    acceptTerms: build.mutation<{ version: string }, string>({
+      query: (version) => ({ url: "/account/terms", method: "POST", body: { version } }),
+      invalidatesTags: ["Me"],
+    }),
     getRoleOptions: build.query<RoleOptions, void>({
       query: () => "/account/role-options",
       providesTags: ["Me"],
@@ -91,6 +95,7 @@ export const {
   useUploadMyPhotoMutation,
   useGetVerificationQuery,
   useSearchPreachersQuery,
+  useAcceptTermsMutation,
   useUpdateMyNameMutation,
   useUploadAccountPhotoMutation,
   useRemoveAccountPhotoMutation,
