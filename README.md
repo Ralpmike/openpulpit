@@ -5,6 +5,7 @@ Preachers go live with audio from a phone browser; listeners follow, listen live
 - Product requirements: [docs/PRD.md](docs/PRD.md)
 - Tickets: [docs/TICKETS.md](docs/TICKETS.md) (GitHub issues #1–#42)
 - How we build: [CLAUDE.md](CLAUDE.md) and the skills in `.claude/skills/`
+- Private beta: [docs/beta/](docs/beta/README.md)
 
 ## Getting started
 
