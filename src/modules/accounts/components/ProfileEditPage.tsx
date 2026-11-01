@@ -11,6 +11,7 @@ import { SectionLoadingSkeleton } from "@/components/ui/molecules/SectionLoading
 import { getErrorMessage } from "@/helpers/api/getErrorMessage";
 import { PhotoUploader } from "@/modules/accounts/components/PhotoUploader";
 import { PreacherProfileForm } from "@/modules/accounts/components/PreacherProfileForm";
+import { VerificationCard } from "@/modules/accounts/components/VerificationCard";
 import type { PreacherProfileFormValues } from "@/modules/accounts/schemas/profile";
 import { useGetMyProfileQuery, useSaveMyProfileMutation } from "@/modules/accounts/store/endpoints";
 
@@ -74,6 +75,7 @@ export function ProfileEditPage({ accountName }: ProfileEditPageProps) {
           bio: profile?.bio ?? "",
         }}
       />
+      {profile ? <VerificationCard /> : null}
       {profile ? (
         <Button variant="link" asChild className="self-start px-0">
           <Link href={`/p/${profile.slug}`}>View your public page</Link>

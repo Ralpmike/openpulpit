@@ -1,7 +1,12 @@
 import { api } from "@/store/api";
 import type { Me, PreacherProfile } from "@/modules/accounts/models";
 import type { PreacherProfileFormValues } from "@/modules/accounts/schemas/profile";
-import type { PreacherApplicationFormValues } from "@/modules/accounts/schemas/auth";
+import type { PreacherApplicationFormValues, VerificationRequestFormValues } from "@/modules/accounts/schemas/auth";
+
+export interface VerificationState {
+  status: "none" | "pending" | "verified" | "rejected";
+  decisionNote: string;
+}
 
 export interface RoleOptions {
   canChooseRole: boolean;
@@ -30,6 +35,14 @@ export const accountsApi = api.injectEndpoints({
       },
       invalidatesTags: [{ type: "Preacher", id: "ME" }, "Preacher"],
     }),
+    getVerification: build.query<VerificationState, void>({
+      query: () => "/verification",
+      providesTags: [{ type: "Preacher", id: "VERIFICATION" }],
+    }),
+    requestVerification: build.mutation<{ id: string }, VerificationRequestFormValues>({
+      query: (body) => ({ url: "/verification", method: "POST", body }),
+      invalidatesTags: [{ type: "Preacher", id: "VERIFICATION" }],
+    }),
     getRoleOptions: build.query<RoleOptions, void>({
       query: () => "/account/role-options",
       providesTags: ["Me"],
@@ -49,4 +62,6 @@ export const {
   useGetMyProfileQuery,
   useSaveMyProfileMutation,
   useUploadMyPhotoMutation,
+  useGetVerificationQuery,
+  useRequestVerificationMutation,
   useGetMeQuery, useGetRoleOptionsQuery, useChooseToPreachMutation, useApplyToPreachMutation } = accountsApi;
