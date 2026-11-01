@@ -4,7 +4,7 @@ import type { Room } from "livekit-client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { getErrorMessage } from "@/helpers/api/getErrorMessage";
-import { MIC_CAPTURE_OPTIONS, MIC_PUBLISH_OPTIONS } from "@/modules/broadcasting/audio";
+import { HQ_PUBLISH_OPTIONS, isOnWifi, MIC_CAPTURE_OPTIONS, MIC_PUBLISH_OPTIONS } from "@/modules/broadcasting/audio";
 import { FINAL_DISCONNECT_REASONS, rejoinDelay, shouldKeepRejoining } from "@/modules/broadcasting/reconnect";
 import { useGetPublishTokenMutation } from "@/modules/broadcasting/store/endpoints";
 
@@ -41,7 +41,7 @@ export function useLiveBroadcast(): UseLiveBroadcastReturn {
   const connect = useCallback(
     async (broadcastId: string, deviceId: string | null | undefined, onDropped: (reason?: number) => void) => {
       try {
-        const [grant, { Room, RoomEvent }] = await Promise.all([
+        const [grant, { Room, RoomEvent, Track, createLocalAudioTrack }] = await Promise.all([
           getPublishToken(broadcastId).unwrap(),
           import("livekit-client"),
         ]);
@@ -61,6 +61,16 @@ export function useLiveBroadcast(): UseLiveBroadcastReturn {
           { ...MIC_CAPTURE_OPTIONS, ...(deviceId ? { deviceId } : {}) },
           MIC_PUBLISH_OPTIONS,
         );
+        // A second, 64 kbps track for listeners who chose higher quality on Wi-Fi.
+        // Only when the preacher is on Wi-Fi; never fatal if it fails.
+        if (isOnWifi()) {
+          try {
+            const hqTrack = await createLocalAudioTrack({ ...MIC_CAPTURE_OPTIONS, ...(deviceId ? { deviceId } : {}) });
+            await room.localParticipant.publishTrack(hqTrack, { ...HQ_PUBLISH_OPTIONS, source: Track.Source.Microphone });
+          } catch (error) {
+            console.warn("High-quality track not published; listeners get the standard track", error);
+          }
+        }
         countListeners();
         setConnectionState("live");
         return { ok: true as const };

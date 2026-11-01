@@ -34,10 +34,10 @@ describe("PlayerBar", () => {
 
   it("says when it is reconnecting, and offers a tap when the browser blocks audio", () => {
     playerContext.liveState = "reconnecting";
-    renderWithStore(<PlayerBar />, { preloadedState: { player: { nowPlaying: live, isPlaying: true, speed: 1 } } });
+    renderWithStore(<PlayerBar />, { preloadedState: { player: { nowPlaying: live, isPlaying: true, speed: 1, prefersHighQuality: false } } });
     expect(screen.getByTestId("player-bar")).toHaveTextContent("Reconnecting…");
     playerContext.liveState = "blocked";
-    renderWithStore(<PlayerBar />, { preloadedState: { player: { nowPlaying: live, isPlaying: true, speed: 1 } } });
+    renderWithStore(<PlayerBar />, { preloadedState: { player: { nowPlaying: live, isPlaying: true, speed: 1, prefersHighQuality: false } } });
     expect(screen.getByRole("button", { name: "Start audio" })).toBeInTheDocument();
   });
 });

@@ -5,7 +5,9 @@ import { createContext, useContext, useEffect, useMemo, useRef, type ReactNode }
 import { useAppDispatch, useAppSelector } from "@/hooks/store";
 import { setMediaPlaybackState, setMediaSession } from "@/modules/player/mediaSession";
 import { useLiveAudio, type LiveAudioState } from "@/modules/player/useLiveAudio";
-import { pause, resume, stop } from "@/store/playerSlice";
+import { pause, resume, setPrefersHighQuality, stop } from "@/store/playerSlice";
+
+const QUALITY_KEY = "openpulpit.audioQuality";
 
 interface PlayerContextValue {
   audioRef: React.RefObject<HTMLAudioElement | null>;
@@ -29,10 +31,26 @@ export function usePlayer(): PlayerContextValue {
  */
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const dispatch = useAppDispatch();
-  const { nowPlaying, isPlaying } = useAppSelector((state) => state.player);
+  const { nowPlaying, isPlaying, prefersHighQuality } = useAppSelector((state) => state.player);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const liveId = nowPlaying?.kind === "live" ? nowPlaying.id : null;
-  const live = useLiveAudio(liveId, isPlaying, audioRef);
+  const live = useLiveAudio(liveId, isPlaying, audioRef, prefersHighQuality);
+
+  // Remember "Higher quality on Wi-Fi" on this device (a per-viewer convenience, so localStorage).
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(QUALITY_KEY) === "high") dispatch(setPrefersHighQuality(true));
+    } catch {
+      // Private mode: fine, it just isn't remembered.
+    }
+  }, [dispatch]);
+  useEffect(() => {
+    try {
+      localStorage.setItem(QUALITY_KEY, prefersHighQuality ? "high" : "standard");
+    } catch {
+      // ignore
+    }
+  }, [prefersHighQuality]);
 
   useEffect(() => {
     setMediaSession(nowPlaying, {
