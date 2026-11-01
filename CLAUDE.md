@@ -1,6 +1,6 @@
 # OpenPulpit (run by FutureLabs)
 
-A web app where preachers go live with audio from a phone browser, and listeners follow them, listen live and replay sermons. Launch market: Nigeria. The MVP is audio only. PRD: "OpenPulpit PRD" (Claude Docs, https://claude.ai/artifact/8KfEbRE8ikojtGoTY285By), requirements 1–30, copied to `docs/PRD.md`. Tickets OP-1 to OP-42 are in `docs/TICKETS.md`; each one is GitHub issue #N on Ralpmike/openpulpit, with `epic:*`, `type:*`, `size:*` and `req:N` labels and a milestone (M1 Foundation, M2 Core MVP, M3 Trust and safety, M4 Beta).
+A web app where preachers go live with audio from a phone browser, and listeners follow them, listen live and replay sermons. Launch market: Nigeria. The MVP is audio only. PRD: "OpenPulpit PRD" (Claude Docs, https://claude.ai/artifact/8KfEbRE8ikojtGoTY285By), requirements 1–30, copied to `docs/PRD.md`. Tickets OP-1 to OP-42 are in `docs/TICKETS.md`; each one is GitHub issue #N on Ralpmike/openpulpit, with `epic:*`, `type:*`, `size:*` and `req:N` labels and a milestone (M1 Foundation, M2 Core MVP, M3 Trust and safety, M4 Beta). New issues are added to the "OpenPulpit" project board automatically by the board's own workflow.
 
 - One Next.js app (App Router), deployed to Cloudflare Workers through OpenNext: pages, the JSON API (`src/app/api/`) and the LiveKit webhook.
 - A modular monolith: `src/modules/` holds `accounts`, `broadcasting`, `library` (recordings), `social` (follows and notifications), `moderation` and `admin`. Each owns its tables and exposes a public server API through its `index.ts`.
@@ -18,7 +18,11 @@ Set up in OP-1 to OP-3; until then the repo has docs and skills only.
 - Role and ownership checks on every API route, on the server. Preachers manage only their own broadcasts and recordings.
 - Every admin action is logged. OpenPulpit does not police doctrine.
 - Out of scope for the MVP (PRD "Not now"): video, native apps, payments and giving, live chat, co-hosts, scheduled broadcasts, non-English interface.
-- One branch and one pull request per ticket; reference `OP-N` and `Closes #N`.
+
+## Branches
+- `dev` is the staging branch and the default: every ticket gets its own branch from `dev` and one pull request into `dev`, referencing `OP-N` and `Closes #N`. `dev` deploys to staging.
+- `main` is production: it only receives pull requests from `dev` (a release, after `weekly-ship`). `main` deploys to production.
+- Never push directly to `dev` or `main`.
 
 ## Skills to follow
 Project skills live in `.claude/skills/`. The ones that define this codebase:
