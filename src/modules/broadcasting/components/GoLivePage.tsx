@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/atoms/button";
 import { LiveBadge } from "@/components/ui/molecules/LiveBadge";
 import { LoaderButton } from "@/components/ui/molecules/LoaderButton";
 import { getErrorMessage } from "@/helpers/api/getErrorMessage";
-import { BroadcastDetailsForm } from "@/modules/broadcasting/components/BroadcastDetailsForm";
+import { BiblePassage, BroadcastDetailsForm } from "@/modules/broadcasting/components/BroadcastDetailsForm";
 import { MicCheck } from "@/modules/broadcasting/components/MicCheck";
 import { useLiveBroadcast } from "@/modules/broadcasting/hooks/useLiveBroadcast";
 import { useMicCheck } from "@/modules/broadcasting/hooks/useMicCheck";
@@ -63,6 +63,7 @@ export function GoLivePage() {
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold">{step === "live" ? broadcast?.title : "Go live"}</h1>
         {step !== "live" ? <p className="text-muted-foreground">Preach from your phone. Every broadcast is recorded for replay.</p> : null}
+        {step !== "details" && broadcast ? <BiblePassage passage={broadcast.biblePassage} /> : null}
       </div>
 
       {step === "details" ? <BroadcastDetailsForm onSubmit={saveDetails} isSubmitting={isCreateBroadcastPending} /> : null}
