@@ -21,6 +21,10 @@ function createAuth(env: CloudflareEnv) {
     trustedOrigins: [env.APP_URL],
     database: env.DB,
     user: { additionalFields: authUserFields },
+    account: {
+      // Google confirms email ownership, so a Google sign-in joins an existing account with the same email.
+      accountLinking: { enabled: true, trustedProviders: ["google"] },
+    },
     session: {
       expiresIn: 60 * 60 * 24 * 30, // 30 days: people stay signed in on their phone
       updateAge: 60 * 60 * 24,
@@ -97,6 +101,11 @@ function createAuth(env: CloudflareEnv) {
 }
 
 export type Auth = ReturnType<typeof createAuth>;
+
+/** Google sign-in shows only when its keys are set for this environment. */
+export function isGoogleSignInEnabled(env: CloudflareEnv = getEnv()): boolean {
+  return Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET);
+}
 
 const instances = new WeakMap<D1Database, Auth>();
 

@@ -1,16 +1,25 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { Alert, AlertDescription } from "@/components/ui/atoms/alert";
+import { FieldSeparator } from "@/components/ui/atoms/field";
 import { authClient, authErrorMessage } from "@/lib/authClient";
+import { GoogleSignInButton } from "@/modules/accounts/components/GoogleSignInButton";
 import { SignUpForm } from "@/modules/accounts/components/SignUpForm";
 import { useAfterSignIn } from "@/modules/accounts/components/useAfterSignIn";
 import type { SignUpFormValues } from "@/modules/accounts/schemas/auth";
 
-export function SignUpPage() {
+export interface SignUpPageProps {
+  isGoogleEnabled: boolean;
+}
+
+export function SignUpPage({ isGoogleEnabled }: SignUpPageProps) {
   const { nextPath, finishSignIn } = useAfterSignIn();
+  const searchParams = useSearchParams();
+  const isGoogleError = searchParams.get("error") === "google";
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   async function signUp(values: SignUpFormValues) {
@@ -33,6 +42,19 @@ export function SignUpPage() {
           <AlertDescription>{errorMessage}</AlertDescription>
         </Alert>
       ) : null}
+      {isGoogleError && !errorMessage ? (
+        <Alert variant="destructive">
+          <AlertDescription>Google sign-in didn&apos;t finish. Try again, or use your email.</AlertDescription>
+        </Alert>
+      ) : null}
+
+      {isGoogleEnabled ? (
+        <div className="flex flex-col gap-4">
+          <GoogleSignInButton callbackPath={nextPath} />
+          <FieldSeparator>or</FieldSeparator>
+        </div>
+      ) : null}
+
       <SignUpForm onSubmit={signUp} />
       <p className="text-sm text-muted-foreground">
         Already have an account?{" "}
