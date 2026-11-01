@@ -16,11 +16,14 @@
     "db:migrate:staging": "wrangler d1 migrations apply DB --remote --env staging",
     "db:migrate:production": "wrangler d1 migrations apply DB --remote --env production",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "db:seed:local": "wrangler d1 execute DB --local --file scripts/seed.sql",
+    "db:auth-schema": "node --experimental-strip-types --no-warnings scripts/auth-schema.ts"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.20.15",
     "@reduxjs/toolkit": "^2.13.0",
+    "better-auth": "^1.7.15",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.5.1",
     "lucide-react": "^1.66.0",
