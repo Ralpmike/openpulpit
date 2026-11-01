@@ -11,6 +11,8 @@ import { recordingDataLabel } from "@/helpers/audio/dataUse";
 import { formatShortDate } from "@/helpers/format/date";
 import { formatDuration } from "@/helpers/format/duration";
 import { getDb } from "@/lib/cloudflare";
+import { shareMetadata } from "@/lib/metadata";
+import { ShareButtons } from "@/components/ui/molecules/ShareButtons";
 import { getViewer } from "@/modules/accounts";
 import { getPlayableRecording } from "@/modules/library/server/playback";
 import { ListenButton } from "@/modules/player/ListenButton";
@@ -21,9 +23,17 @@ export const dynamic = "force-dynamic";
 const load = cache(async (id: string) => getPlayableRecording(getDb(), id, await getViewer()));
 
 export async function generateMetadata({ params }: PageProps<"/r/[id]">): Promise<Metadata> {
-  const recording = await load((await params).id);
-  if (!recording) return { title: "Sermon not found" };
-  return { title: `${recording.title} · ${recording.preacher.name}` };
+  const { id } = await params;
+  // Preview cards use public data only: a hidden or deleted sermon gives no preview.
+  const recording = await getPlayableRecording(getDb(), id, null);
+  if (!recording) return { title: "Sermon not found", robots: { index: false } };
+  const parts = [recording.preacher.name, recording.biblePassage, formatDuration(recording.durationSeconds)].filter(Boolean);
+  return shareMetadata({
+    title: `${recording.title} · ${recording.preacher.name}`,
+    description: recording.description ? `${parts.join(" · ")}. ${recording.description}`.slice(0, 200) : `${parts.join(" · ")}. Listen on OpenPulpit.`,
+    path: `/r/${recording.id}`,
+    image: recording.preacher.photoUrl,
+  });
 }
 
 export default async function RecordingPage({ params }: PageProps<"/r/[id]">) {
@@ -69,6 +79,7 @@ export default async function RecordingPage({ params }: PageProps<"/r/[id]">) {
         <DataUseNote label={`${recordingDataLabel(recording.durationSeconds, recording.bitrateKbps)} for the whole sermon`} />
         <ReplayControlsFor recordingId={recording.id} />
       </div>
+      {recording.isPublic ? <ShareButtons path={`/r/${recording.id}`} text={`${recording.title} by ${recording.preacher.name}`} /> : null}
       {recording.description ? <p className="text-left text-pretty whitespace-pre-line">{recording.description}</p> : null}
     </article>
   );
