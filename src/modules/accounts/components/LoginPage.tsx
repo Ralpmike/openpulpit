@@ -1,18 +1,27 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { Alert, AlertDescription } from "@/components/ui/atoms/alert";
 import { Button } from "@/components/ui/atoms/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/atoms/tabs";
+import { FieldSeparator } from "@/components/ui/atoms/field";
 import { authClient, authErrorMessage } from "@/lib/authClient";
+import { GoogleSignInButton } from "@/modules/accounts/components/GoogleSignInButton";
 import { EmailCodeRequestForm, EmailCodeVerifyForm } from "@/modules/accounts/components/EmailCodeForms";
 import { PasswordSignInForm } from "@/modules/accounts/components/PasswordSignInForm";
 import { useAfterSignIn } from "@/modules/accounts/components/useAfterSignIn";
 
-export function LoginPage() {
+export interface LoginPageProps {
+  isGoogleEnabled: boolean;
+}
+
+export function LoginPage({ isGoogleEnabled }: LoginPageProps) {
   const { nextPath, finishSignIn } = useAfterSignIn();
+  const searchParams = useSearchParams();
+  const isGoogleError = searchParams.get("error") === "google";
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [codeEmail, setCodeEmail] = useState<string | null>(null);
 
@@ -51,6 +60,19 @@ export function LoginPage() {
         <Alert variant="destructive" data-testid="sign-in-error">
           <AlertDescription>{errorMessage}</AlertDescription>
         </Alert>
+      ) : null}
+
+      {isGoogleError && !errorMessage ? (
+        <Alert variant="destructive">
+          <AlertDescription>Google sign-in didn&apos;t finish. Try again, or use your email.</AlertDescription>
+        </Alert>
+      ) : null}
+
+      {isGoogleEnabled ? (
+        <div className="flex flex-col gap-4">
+          <GoogleSignInButton callbackPath={nextPath} />
+          <FieldSeparator>or</FieldSeparator>
+        </div>
       ) : null}
 
       <Tabs defaultValue="code" onValueChange={() => setErrorMessage(null)}>
