@@ -8,6 +8,7 @@ import type { MyRecording, RecordingVisibility } from "@/modules/library/models"
 interface OwnedRow {
   id: string;
   r2_key: string;
+  created_at: string;
   status: MyRecording["status"];
   visibility: RecordingVisibility;
 }
@@ -15,7 +16,7 @@ interface OwnedRow {
 /** Ownership is in the query (broadcasting-rules): another preacher's recording is simply not found. */
 async function getOwned(db: D1Database, viewer: Viewer, id: string): Promise<OwnedRow> {
   const row = await db
-    .prepare("SELECT id, r2_key, status, visibility FROM recordings WHERE id = ? AND preacher_id = ? AND status <> 'deleted'")
+    .prepare("SELECT id, r2_key, status, visibility, created_at FROM recordings WHERE id = ? AND preacher_id = ? AND status <> 'deleted'")
     .bind(id, viewer.id)
     .first<OwnedRow>();
   if (!row) throw notFound("We couldn't find that recording.");
@@ -89,6 +90,8 @@ export async function deleteRecordingFile(db: D1Database, bucket: R2Bucket, row:
 
 export async function deleteMyRecording(db: D1Database, bucket: R2Bucket, viewer: Viewer, id: string): Promise<void> {
   const row = await getOwned(db, viewer, id);
-  if (row.status === "processing") throw conflict("This recording is still being saved. Try again in a minute.");
+  // A recording still saving can't be deleted, unless it has been stuck for over an hour.
+  const isStuck = Date.now() - new Date(row.created_at).getTime() > 60 * 60 * 1000;
+  if (row.status === "processing" && !isStuck) throw conflict("This recording is still being saved. Try again in a minute.");
   await deleteRecordingFile(db, bucket, row);
 }
