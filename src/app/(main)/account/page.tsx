@@ -40,6 +40,11 @@ export default async function AccountPage() {
         </Link>
       </Button>
       {isListener ? <BecomePreacherCard /> : null}
+      {viewer.role === "admin" ? (
+        <Button asChild variant="outline" data-testid="admin-link">
+          <Link href="/admin">Admin dashboard</Link>
+        </Button>
+      ) : null}
       <SignOutButton />
     </div>
   );
