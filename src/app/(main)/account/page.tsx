@@ -24,9 +24,14 @@ export default async function AccountPage() {
       {isListener ? (
         <ListenerProfileCard initialName={viewer.name} initialPhotoUrl={viewer.image} />
       ) : (
-        <Button asChild variant="outline" data-testid="edit-profile-link">
-          <Link href="/profile/edit">Your preacher profile</Link>
-        </Button>
+        <div className="flex flex-col gap-2">
+          <Button asChild variant="outline" data-testid="edit-profile-link">
+            <Link href="/profile/edit">Your preacher profile</Link>
+          </Button>
+          <Button asChild variant="outline" data-testid="my-recordings-link">
+            <Link href="/profile/recordings">Your sermons</Link>
+          </Button>
+        </div>
       )}
       <Button asChild variant="outline" data-testid="following-link">
         <Link href="/following">
