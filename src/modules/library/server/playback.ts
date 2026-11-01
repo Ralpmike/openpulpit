@@ -50,7 +50,12 @@ export function parseRange(header: string | null, size: number): { offset: numbe
 }
 
 /** Streams a recording from private R2, with Range support for seeking (requirement 21). */
-export async function streamRecording(bucket: R2Bucket, key: string, rangeHeader: string | null): Promise<Response> {
+export async function streamRecording(
+  bucket: R2Bucket,
+  key: string,
+  rangeHeader: string | null,
+  onServed: (bytes: number) => void = () => undefined,
+): Promise<Response> {
   const head = await bucket.head(key);
   if (!head) throw notFound("We couldn't find that recording.");
   const range = parseRange(rangeHeader, head.size);
@@ -66,6 +71,7 @@ export async function streamRecording(bucket: R2Bucket, key: string, rangeHeader
   }
   const object = await bucket.get(key, range ? { range } : undefined);
   if (!object) throw notFound("We couldn't find that recording.");
+  onServed(range ? range.length : head.size);
   if (!range) return new Response(object.body, { headers: { ...headers, "content-length": String(head.size) } });
   return new Response(object.body, {
     status: 206,

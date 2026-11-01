@@ -1,5 +1,6 @@
 import { notFound, route } from "@/lib/api";
-import { getDb, getRecordingsBucket } from "@/lib/cloudflare";
+import { getDb, getRecordingsBucket, waitUntil } from "@/lib/cloudflare";
+import { addDailyStatsStatement } from "@/modules/admin";
 import { getViewer } from "@/modules/accounts";
 import { getPlayableRecording, streamRecording } from "@/modules/library/server/playback";
 
@@ -10,5 +11,8 @@ export const GET = route(async (request: Request, { params }: RouteContext<"/api
   const viewer = await getViewer();
   const recording = await getPlayableRecording(getDb(), (await params).id, viewer);
   if (!recording) throw notFound("We couldn't find that recording.");
-  return streamRecording(getRecordingsBucket(), recording.r2Key, request.headers.get("range"));
+  // Replay bytes count towards the platform's bandwidth total (requirement 28).
+  return streamRecording(getRecordingsBucket(), recording.r2Key, request.headers.get("range"), (bytes) =>
+    waitUntil(addDailyStatsStatement(getDb(), { bandwidthBytes: bytes }).run().catch(() => undefined)),
+  );
 });
