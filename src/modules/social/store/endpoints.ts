@@ -1,6 +1,13 @@
 import { api } from "@/store/api";
 import type { FollowedPreacher, FollowState } from "@/modules/social/models";
 
+export interface FollowerSummary {
+  id: string;
+  name: string;
+  image: string | null;
+  followedAt: string;
+}
+
 export const socialApi = api.injectEndpoints({
   endpoints: (build) => ({
     getFollowState: build.query<FollowState, string>({
@@ -47,6 +54,14 @@ export const socialApi = api.injectEndpoints({
         }
       },
     }),
+    listMyFollowers: build.query<{ followers: FollowerSummary[]; blocked: FollowerSummary[] }, void>({
+      query: () => "/me/followers",
+      providesTags: [{ type: "Follow", id: "FOLLOWERS" }],
+    }),
+    setBlocked: build.mutation<{ isBlocked: boolean }, { listenerId: string; isBlocked: boolean }>({
+      query: ({ listenerId, isBlocked }) => ({ url: `/blocks/${listenerId}`, method: isBlocked ? "PUT" : "DELETE" }),
+      invalidatesTags: [{ type: "Follow", id: "FOLLOWERS" }],
+    }),
     listFollowing: build.query<FollowedPreacher[], void>({
       query: () => "/me/following",
       providesTags: [{ type: "Follow", id: "LIST" }],
@@ -54,4 +69,11 @@ export const socialApi = api.injectEndpoints({
   }),
 });
 
-export const { useGetFollowStateQuery, useSetFollowingMutation, useListFollowingQuery, useSetFollowNotificationsMutation } = socialApi;
+export const {
+  useGetFollowStateQuery,
+  useSetFollowingMutation,
+  useListFollowingQuery,
+  useSetFollowNotificationsMutation,
+  useListMyFollowersQuery,
+  useSetBlockedMutation,
+} = socialApi;

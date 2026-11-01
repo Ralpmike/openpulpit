@@ -31,6 +31,9 @@ export default async function AccountPage() {
           <Button asChild variant="outline" data-testid="my-recordings-link">
             <Link href="/profile/recordings">Your sermons</Link>
           </Button>
+          <Button asChild variant="outline" data-testid="my-followers-link">
+            <Link href="/profile/followers">Your followers</Link>
+          </Button>
         </div>
       )}
       <Button asChild variant="outline" data-testid="following-link">
