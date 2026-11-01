@@ -22,6 +22,7 @@ export const signUpSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
   role: roleChoiceSchema,
+  acceptsTerms: z.literal(true, { message: "Please accept the terms and community guidelines to continue." }),
 });
 export type SignUpFormValues = z.infer<typeof signUpSchema>;
 

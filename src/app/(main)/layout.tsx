@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/layout/AppShell";
 import type { NavAudience } from "@/components/layout/navItems";
 import { getViewer } from "@/modules/accounts";
+import { TermsGate } from "@/modules/accounts/components/TermsGate";
 import { PlayerBar } from "@/modules/player/PlayerBar";
 import { PlayerProvider } from "@/modules/player/PlayerProvider";
 
@@ -14,6 +15,7 @@ export default async function MainLayout({ children }: LayoutProps<"/">) {
       <AppShell audience={audience} player={<PlayerBar />}>
         {children}
       </AppShell>
+      {viewer ? <TermsGate /> : null}
     </PlayerProvider>
   );
 }
