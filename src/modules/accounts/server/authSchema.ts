@@ -12,6 +12,8 @@ export const USER_STATUSES = ["active", "warned", "suspended", "banned"] as cons
 export type UserStatus = (typeof USER_STATUSES)[number];
 
 export const authUserFields = {
+  // Never an input: Better Auth's own endpoints (sign-up, update-user) must not set it.
+  // A new account picks "preacher" through POST /api/account/role (accounts policy).
   role: { type: "string", required: false, defaultValue: "listener", input: false },
   status: { type: "string", required: false, defaultValue: "active", input: false },
   termsVersion: { type: "string", required: false, defaultValue: "", input: false },

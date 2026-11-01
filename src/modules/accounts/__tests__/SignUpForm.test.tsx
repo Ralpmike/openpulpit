@@ -23,9 +23,10 @@ describe("SignUpForm", () => {
     await userEvent.type(screen.getByLabelText("Your name"), "Ada Obi");
     await userEvent.type(screen.getByLabelText("Email"), "ada@example.ng");
     await userEvent.type(screen.getByLabelText("Password"), "Psalm23-is-mine");
+    await userEvent.click(screen.getByLabelText(/I'm a preacher/));
     await userEvent.click(screen.getByTestId("sign-up-button"));
     expect(onSubmit).toHaveBeenCalledWith(
-      { name: "Ada Obi", email: "ada@example.ng", password: "Psalm23-is-mine" },
+      { name: "Ada Obi", email: "ada@example.ng", password: "Psalm23-is-mine", role: "preacher" },
       expect.anything(),
     );
   });

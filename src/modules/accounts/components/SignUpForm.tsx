@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { FieldGroup } from "@/components/ui/atoms/field";
 import { FormFieldInput } from "@/components/ui/molecules/FormFieldInput";
 import { LoaderButton } from "@/components/ui/molecules/LoaderButton";
+import { RoleChoiceField } from "@/modules/accounts/components/RoleChoiceField";
 import { signUpSchema, type SignUpFormValues } from "@/modules/accounts/schemas/auth";
 
 export interface SignUpFormProps {
@@ -19,7 +20,7 @@ export interface SignUpFormProps {
 export function SignUpForm({ onSubmit, children, isSubmitDisabled = false }: SignUpFormProps) {
   const form = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { name: "", email: "", password: "" },
+    defaultValues: { name: "", email: "", password: "", role: "listener" },
   });
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} noValidate data-testid="sign-up-form">
@@ -35,6 +36,7 @@ export function SignUpForm({ onSubmit, children, isSubmitDisabled = false }: Sig
           description="At least 8 characters."
           data-testid="sign-up-password"
         />
+        <RoleChoiceField control={form.control} />
         {children}
         <LoaderButton type="submit" size="lg" disabled={isSubmitDisabled} isLoading={form.formState.isSubmitting} loadingLabel="Creating your account…" data-testid="sign-up-button">
           Create account

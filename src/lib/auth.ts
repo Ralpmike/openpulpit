@@ -77,6 +77,23 @@ function createAuth(env: CloudflareEnv) {
       useSecureCookies: env.APP_ENV !== "local",
     },
     databaseHooks: {
+      user: {
+        create: {
+          async before(user) {
+            // Every account starts as an active listener. Preachers are set by our own routes.
+            return { data: { ...user, role: "listener", status: "active", termsVersion: "" } };
+          },
+        },
+        update: {
+          async before(data) {
+            // Role and status change only through our own routes, never through Better Auth's update-user.
+            const rest = { ...(data as Record<string, unknown>) };
+            delete rest.role;
+            delete rest.status;
+            return { data: rest };
+          },
+        },
+      },
       session: {
         create: {
           async before(session) {
