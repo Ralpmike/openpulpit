@@ -17,6 +17,15 @@ export const authClient = createAuthClient({
   ],
 });
 
+/**
+ * Re-reads the session from the server and rewrites the 5-minute session
+ * cookie cache. Call after our own routes change role or terms, so pages see
+ * the change at once instead of after the cache expires.
+ */
+export async function refreshSession(): Promise<void> {
+  await authClient.getSession({ query: { disableCookieCache: true } }).catch(() => undefined);
+}
+
 /** Better Auth's error → a sentence for people. */
 export function authErrorMessage(error: { status?: number; message?: string; code?: string } | null | undefined): string {
   if (!error) return "Something went wrong. Please try again.";

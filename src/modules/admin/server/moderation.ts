@@ -71,7 +71,18 @@ export async function runAdminAction(env: CloudflareEnv, admin: Viewer, input: A
         audit("user", user.id, { status, endedBroadcast: live?.id ?? null }),
       ];
       // Suspended and banned: signed out everywhere, and a live broadcast ends at once.
-      if (isRemoving) statements.push(db.prepare("DELETE FROM session WHERE userId = ?").bind(user.id));
+      if (isRemoving) {
+        statements.push(db.prepare("DELETE FROM session WHERE userId = ?").bind(user.id));
+        // A publish token minted before the suspension must not lead to a broadcast.
+        statements.push(
+          db
+            .prepare(
+              `UPDATE broadcasts SET status = 'ended', ended_reason = 'admin', ended_at = ?1, started_at = COALESCE(started_at, ?1)
+                WHERE preacher_id = ?2 AND status = 'ready'`,
+            )
+            .bind(nowIso(), user.id),
+        );
+      }
       if (live) statements.push(endBroadcastStatement(db, live.id, "admin"));
       await db.batch(statements);
       if (live) await afterBroadcastEnded(env, live.id);
