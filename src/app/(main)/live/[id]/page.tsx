@@ -6,7 +6,9 @@ import { cache } from "react";
 
 import { Button } from "@/components/ui/atoms/button";
 import { LiveBadge } from "@/components/ui/molecules/LiveBadge";
+import { DataUseNote } from "@/components/ui/molecules/DataUseNote";
 import { PreacherAvatar } from "@/components/ui/molecules/PreacherAvatar";
+import { dataUseLabel } from "@/helpers/audio/dataUse";
 import { getDb } from "@/lib/cloudflare";
 import { getBroadcastWithPreacher } from "@/modules/broadcasting/server/queries";
 import { getPublicRecordingIdForBroadcast } from "@/modules/library";
@@ -63,6 +65,7 @@ export default async function LivePage({ params }: PageProps<"/live/[id]">) {
             <HeadphonesIcon aria-hidden className="size-4" />
             {broadcast.listenerCount} listening now
           </p>
+          <DataUseNote label={`${dataUseLabel()} of data`} />
           <div className="mt-2 rounded-lg border p-3 text-left">
             <QualityToggle />
           </div>
