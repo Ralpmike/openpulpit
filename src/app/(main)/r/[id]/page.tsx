@@ -13,6 +13,7 @@ import { formatDuration } from "@/helpers/format/duration";
 import { getDb } from "@/lib/cloudflare";
 import { shareMetadata } from "@/lib/metadata";
 import { ShareButtons } from "@/components/ui/molecules/ShareButtons";
+import { ReportButton } from "@/modules/moderation/components/ReportButton";
 import { getViewer } from "@/modules/accounts";
 import { getPlayableRecording } from "@/modules/library/server/playback";
 import { ListenButton } from "@/modules/player/ListenButton";
@@ -80,6 +81,9 @@ export default async function RecordingPage({ params }: PageProps<"/r/[id]">) {
         <ReplayControlsFor recordingId={recording.id} />
       </div>
       {recording.isPublic ? <ShareButtons path={`/r/${recording.id}`} text={`${recording.title} by ${recording.preacher.name}`} /> : null}
+      <div className="flex justify-center">
+        <ReportButton targetType="recording" targetId={recording.id} isSignedIn={Boolean(await getViewer())} returnPath={`/r/${recording.id}`} />
+      </div>
       {recording.description ? <p className="text-left text-pretty whitespace-pre-line">{recording.description}</p> : null}
     </article>
   );
