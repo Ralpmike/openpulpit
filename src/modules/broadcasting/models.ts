@@ -36,3 +36,29 @@ export interface ListenGrant {
   url: string;
   broadcastId: string;
 }
+
+export interface PreacherSummary {
+  name: string;
+  slug: string;
+  photoUrl: string | null;
+  isVerified: boolean;
+}
+
+/** What listeners see about a broadcast. */
+export interface PublicBroadcast {
+  id: string;
+  title: string;
+  description: string;
+  biblePassage: string;
+  status: BroadcastStatus;
+  startedAt: string | null;
+  endedAt: string | null;
+  listenerCount: number;
+  preacher: PreacherSummary;
+}
+
+export interface SyncResponse {
+  broadcast: Broadcast;
+  remainingSeconds: number;
+  isHoursWarning: boolean;
+}
