@@ -5,6 +5,8 @@ import { nowIso } from "@/lib/ids";
 import { TrackType } from "livekit-server-sdk";
 
 import { liveKitConfig, roomService } from "@/lib/livekit";
+import { addDailyStatsStatement } from "@/modules/admin";
+import { PUBLISH_BITRATE_BPS } from "@/modules/broadcasting/audio";
 import { hoursAction, type EndedReason } from "@/modules/broadcasting/server/policy";
 import { getBroadcast, type BroadcastRow } from "@/modules/broadcasting/server/repo";
 import { getHoursSummary } from "@/modules/broadcasting/server/service";
@@ -67,13 +69,33 @@ export async function markPublisherBack(db: D1Database, broadcastId: string) {
   await db.prepare("UPDATE broadcasts SET publisher_left_at = NULL WHERE id = ? AND status = 'live'").bind(broadcastId).run();
 }
 
-export async function setListenerCount(db: D1Database, broadcastId: string, count: number) {
-  await db
-    .prepare(
-      "UPDATE broadcasts SET current_listeners = ?, peak_listeners = MAX(peak_listeners, ?) WHERE id = ? AND status = 'live'",
-    )
-    .bind(count, count, broadcastId)
-    .run();
+/** Longest gap one heartbeat may account for, so a stalled client can't inflate the totals. */
+const MAX_SYNC_GAP_SECONDS = 120;
+
+/**
+ * Updates the live count and peak, and adds the listening since the last sync
+ * (listeners × seconds) to the broadcast and to today's bandwidth estimate.
+ */
+export async function setListenerCount(db: D1Database, broadcastId: string, count: number, now: Date = new Date()) {
+  const row = await db
+    .prepare("SELECT current_listeners, last_synced_at FROM broadcasts WHERE id = ? AND status = 'live'")
+    .bind(broadcastId)
+    .first<{ current_listeners: number; last_synced_at: string | null }>();
+  if (!row) return;
+  const gap = row.last_synced_at ? Math.min(MAX_SYNC_GAP_SECONDS, Math.max(0, (now.getTime() - new Date(row.last_synced_at).getTime()) / 1000)) : 0;
+  const listenSeconds = Math.round(row.current_listeners * gap);
+  const statements = [
+    db
+      .prepare(
+        `UPDATE broadcasts SET current_listeners = ?, peak_listeners = MAX(peak_listeners, ?),
+                listener_seconds = listener_seconds + ?, last_synced_at = ? WHERE id = ? AND status = 'live'`,
+      )
+      .bind(count, count, listenSeconds, nowIso(now), broadcastId),
+  ];
+  if (listenSeconds) {
+    statements.push(addDailyStatsStatement(db, { listenSeconds, bandwidthBytes: (listenSeconds * PUBLISH_BITRATE_BPS) / 8 }, now));
+  }
+  await db.batch(statements);
 }
 
 /** The UPDATE that ends a broadcast once (compare-and-set). Batch it with an audit row for admin ends. */
@@ -90,6 +112,11 @@ export function endBroadcastStatement(db: D1Database, broadcastId: string, reaso
 
 /** After an end: delete the room (drops everyone at once) and tell other modules (recording, stats). */
 export async function afterBroadcastEnded(env: CloudflareEnv, broadcastId: string, { deleteRoom = true } = {}) {
+  const ended = await getBroadcast(env.DB, broadcastId);
+  if (ended?.started_at && ended.ended_at) {
+    const seconds = Math.max(0, (new Date(ended.ended_at).getTime() - new Date(ended.started_at).getTime()) / 1000);
+    await addDailyStatsStatement(env.DB, { broadcastSeconds: seconds }, new Date(ended.started_at)).run();
+  }
   if (deleteRoom) {
     await roomService(liveKitConfig(env))
       .deleteRoom(broadcastId)
@@ -133,7 +160,7 @@ export async function syncBroadcast(env: CloudflareEnv, broadcastId: string, now
   const isPublishing = Boolean(publisher?.tracks.some((track) => track.type === TrackType.AUDIO && !track.muted));
   if (isPublishing && broadcast.status === "ready") await markLive(env, broadcastId, now);
   if (isPublishing && broadcast.publisher_left_at) await markPublisherBack(env.DB, broadcastId);
-  await setListenerCount(env.DB, broadcastId, participants.filter((p) => p.identity !== broadcast!.preacher_id).length);
+  await setListenerCount(env.DB, broadcastId, participants.filter((p) => p.identity !== broadcast!.preacher_id).length, now);
 
   broadcast = (await getBroadcast(env.DB, broadcastId))!;
   if (broadcast.status !== "live") return { broadcast, remainingSeconds: 0, isHoursWarning: false };

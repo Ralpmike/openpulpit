@@ -1,6 +1,6 @@
 import { api } from "@/store/api";
 import type { AdminActionInput } from "@/modules/admin/schemas/actions";
-import type { AuditRow, ReportGroup } from "@/modules/admin/models";
+import type { AuditRow, PlatformStats, ReportGroup } from "@/modules/admin/models";
 
 export interface PendingApplication {
   id: string;
@@ -33,6 +33,7 @@ export const adminApi = api.injectEndpoints({
       query: (body) => ({ url: "/admin/actions", method: "POST", body }),
       invalidatesTags: ["AdminQueue", "LiveNow", "Recording", "Preacher"],
     }),
+    getPlatformStats: build.query<PlatformStats, void>({ query: () => "/admin/stats", providesTags: ["Stats"] }),
     listAuditLog: build.query<AuditRow[], void>({ query: () => "/admin/audit", providesTags: ["AdminQueue"] }),
     listPendingApplications: build.query<PendingApplication[], void>({ query: () => "/admin/preacher-applications", providesTags: ["AdminQueue"] }),
     decideApplication: build.mutation<{ id: string }, Decision>({
@@ -51,6 +52,7 @@ export const {
   useListReportGroupsQuery,
   useRunAdminActionMutation,
   useListAuditLogQuery,
+  useGetPlatformStatsQuery,
   useListPendingApplicationsQuery,
   useDecideApplicationMutation,
   useListPendingVerificationsQuery,
